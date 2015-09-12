@@ -10,7 +10,7 @@ import java.util.Vector;
  * Sends a file to the client
  */
 public class Server {
-    public static void main() {
+    public static void main(String[] args) {
         // Make sure server exits cleanly
         Runtime.getRuntime().addShutdownHook(new Thread(new ExitManager()));
 
