@@ -14,19 +14,11 @@ public class Server {
         // Make sure server exits cleanly
         Runtime.getRuntime().addShutdownHook(new Thread(new ExitManager()));
 
-<<<<<<< HEAD
-		// Start the server
-		ServerRunnable serve = new ServerRunnable(55557);
-		Thread serverThread = new Thread(serve);
-		serverThread.start();
-=======
         // Start the server
         ServerRunnable serve = new ServerRunnable();
         Thread serverThread = new Thread(serve);
         serverThread.start();
         System.out.println("Server Started");
->>>>>>> adb1cf3f2c8a03e7f35ec13abb24aaf8bdbcf707
-
     }
 }
 
