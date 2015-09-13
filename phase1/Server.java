@@ -43,6 +43,7 @@ class ExitManager implements Runnable {
     }
 
     public void run() {
+        System.out.println("Interrupting all threads");
         for (int i = 0; i < ExitManager.threads.size(); i++) {
             Thread thread = (Thread) threads.get(i);
             thread.interrupt();
@@ -89,13 +90,14 @@ class ServerRunnable implements Runnable {
         } else {
             try {
                 serverSocket = new DatagramSocket();
-                port = serverSocket.getPort();
+                port = serverSocket.getLocalPort();
             } catch (Exception e) {
                 System.err.println("Fatal: Failed to open socket with any port");
                 System.err.println("Exception: " + e);
                 System.exit(-1);
             }
         }
+        System.out.println("Socket opened on port " + port);
 
         // Only run until thread is interrupted
         while (Thread.currentThread().isInterrupted() == false) {
@@ -117,6 +119,10 @@ class ServerRunnable implements Runnable {
                 System.err.println("Exception: " + e);
             }
         }
+
+        // Closes server socket
+        serverSocket.close();
+        System.out.println("Socket closed");
 
         // Makes sure exit manager doesn't try to interup inactive thread
         ExitManager.removeThread(Thread.currentThread());
