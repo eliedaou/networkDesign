@@ -5,7 +5,7 @@ public class Client {
 	public static void main(String args[]) throws Exception {
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
-			int port = 55555;
+			int port = 10000;
 			Response response = null;
 			InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
 			byte[] sendData = new byte[1024];
