@@ -63,7 +63,7 @@ class ServerRunnable implements Runnable {
      * Sets up the port as -1
      */
     public ServerRunnable() {
-        this(-1);
+        this(4444);
     }
 
     /**
