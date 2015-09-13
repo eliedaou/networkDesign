@@ -6,7 +6,7 @@ public class Client {
 		try {
 			// initialize *this socket, the server port and a response variable with default value null
 			DatagramSocket clientSocket = new DatagramSocket();
-			int port = 10000;
+			int port = 10002;
 			Response response = null;
 
 			// setting IP to localhost

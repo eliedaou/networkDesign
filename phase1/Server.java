@@ -62,7 +62,7 @@ class ServerRunnable implements Runnable {
      * Sets up the port as -1
      */
     public ServerRunnable() {
-        this(10000);
+        this(10002);
     }
 
     /**
@@ -164,7 +164,7 @@ class ServerRunnable implements Runnable {
             System.err.println("Exception: " + e);
             System.exit(-2);
         }
-        if (contents == "Hello Server") {
+        if (contents.equals("Hello Server")) {
             System.out.println("Got a greeting from a client at " + req.getSource());
             System.out.println("Responding \"Hello Client at " + req.getSource() + "\"");
 
