@@ -204,6 +204,25 @@ class Request {
     }
 }
 
+
+class Response {
+	private InetSocketAddress source;
+	private byte[] contents;
+
+	public Response(InetSocketAddress source, byte[] contents) {
+		this.source = source;
+		this.contents = contents;
+	}
+
+	public InetSocketAddress getSource() {
+		return source;
+	}
+
+	public byte[] getContents() {
+		return contents;
+	}
+ }
+
 /**
  * Holds a message to send over UDP
  */
