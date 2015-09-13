@@ -15,7 +15,7 @@ public class Server {
 		Runtime.getRuntime().addShutdownHook(new Thread(new ExitManager()));
 
 		// Start the server
-		ServerRunnable serve = new ServerRunnable(55555);
+		ServerRunnable serve = new ServerRunnable(55557);
 		Thread serverThread = new Thread(serve);
 		serverThread.start();
 
