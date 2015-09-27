@@ -4,6 +4,9 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Vector;
 
 /**
@@ -26,7 +29,7 @@ public class Server {
  * Manages exiting cleanly
  */
 class ExitManager implements Runnable {
-    private static final Vector threads = new Vector();
+    private static final Vector<Thread> threads = new Vector<Thread>();
 
     public static void addThread(Thread thread) {
         threads.add(thread);
@@ -177,6 +180,20 @@ class ServerRunnable implements Runnable {
                 System.exit(-2);
             }
             response.sendMessage();
+        } else if (contents.startsWith("SEND")) {
+            String path = contents.substring(4).trim();
+            System.out.println("Got a request from a client at " + req.getSource() + " for the file " + path);
+
+            File messageFile = new File(path);
+            try {
+                System.out.println("Sending contents of " + path);
+
+                Message response = new Message(messageFile, socket, req.getSource());
+
+                response.sendMessage();
+            } catch (FileNotFoundException e) {
+                System.err.println("File " + path + " cannot be read. Ignoring request");
+            }
         } else {
             System.err.println("Got a bad request from a client at " + req.getSource());
         }
@@ -227,11 +244,8 @@ class Response {
  * Holds a message to send over UDP
  */
 class Message {
-    // The data to send
-    private final byte[] contents;
-
     // The data, packetized and ready to send
-    private final Vector packets;
+    private final Vector<DatagramPacket> packets;
 
     // The client to send the data to
     private final InetSocketAddress destination;
@@ -239,11 +253,11 @@ class Message {
     // The socket to send from
     private final DatagramSocket socket;
 
+    //make message from byte array
     public Message(byte[] contents, DatagramSocket socket, InetSocketAddress destination) throws SocketException {
-        this.contents = contents;
         this.socket = socket;
         this.destination = destination;
-        packets = new Vector();
+        packets = new Vector<DatagramPacket>();
 
 
         // Get buffer size
@@ -264,6 +278,42 @@ class Message {
         }
     }
 
+    //make message from file
+    public Message(File file, DatagramSocket socket, InetSocketAddress destination) throws SocketException, FileNotFoundException {
+        this.socket = socket;
+        this.destination = destination;
+        packets = new Vector<DatagramPacket>();
+
+        //set up file for reading
+        FileInputStream messageStream = new FileInputStream(file);
+
+        // Get buffer size
+        final int DGRAM_SIZE = socket.getReceiveBufferSize();
+        final int HEADER_SIZE = 0;
+
+        //break file into packets
+        for (int i = 0; i * (DGRAM_SIZE - HEADER_SIZE) < file.length(); i++) {
+            int length = DGRAM_SIZE - HEADER_SIZE;
+            if ((i + 1) * length >= file.length()) {
+                length = (int) file.length() - i * length;
+            }
+            byte[] chunk = new byte[length];
+            try {
+                messageStream.read(chunk);
+            } catch (IOException e) {
+                System.err.println("Fatal: IOException while reading file");
+                System.err.println("Exception: " + e);
+                System.exit(-1);
+            }
+
+            DatagramPacket packet = new DatagramPacket(chunk,
+                                                       length,
+                                                       destination);
+            packets.add(packet);
+        }
+    }
+
+    //make message from string
     public Message(String str, DatagramSocket socket, InetSocketAddress destination) throws UnsupportedEncodingException, SocketException {
         this(str.getBytes("UTF-8"), socket, destination);
     }
