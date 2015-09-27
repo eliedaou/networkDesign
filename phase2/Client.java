@@ -3,13 +3,14 @@ import java.net.*;
 import java.nio.file.Path;
 import java.util.Scanner;
 
+
 public class Client {
 	public static void main(String args[]) throws Exception {
 		try {
 			// initialize *this socket, the server port and a response variable
 			// with default value null
 			DatagramSocket clientSocket = new DatagramSocket();
-			int port = 10002;
+			final int port = 10006;
 			Response response = null;
 
 			// setting IP to localhost
@@ -34,7 +35,7 @@ public class Client {
 			case 2:
 				System.out.print("Input full file path:");
 				path = scanner.next().toString();
-				sendData = ("SEND" + path).getBytes();
+				sendData = ("SEND " + path).getBytes();
 				break;
 			case 3:
 				System.exit(0);

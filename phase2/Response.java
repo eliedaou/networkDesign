@@ -46,7 +46,7 @@ class Response {
 			}
 		} catch (Exception e) {
 			System.err
-					.println("Error: Caught Exception while trying to send message");
+					.println("Error: Caught Exception while trying to receive message");
 			System.err.println("Exception: " + e);
 		}
 	}
