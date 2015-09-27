@@ -186,9 +186,9 @@ class ServerRunnable implements Runnable {
 
             File messageFile = new File(path);
             try {
-                System.out.println("Sending contents of " + path);
-
                 Message response = new Message(messageFile, socket, req.getSource());
+
+                System.out.println("Sending contents of " + path);
 
                 response.sendMessage();
             } catch (FileNotFoundException e) {
