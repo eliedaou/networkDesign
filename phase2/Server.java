@@ -261,7 +261,7 @@ class Message {
 
 
         // Get buffer size
-        final int DGRAM_SIZE = socket.getReceiveBufferSize();
+        final int DGRAM_SIZE = 1024;
         final int HEADER_SIZE = 0;
 
         // break contents into packets
@@ -288,7 +288,7 @@ class Message {
         FileInputStream messageStream = new FileInputStream(file);
 
         // Get buffer size
-        final int DGRAM_SIZE = socket.getReceiveBufferSize();
+        final int DGRAM_SIZE = 1024;
         final int HEADER_SIZE = 0;
 
         //break file into packets
@@ -310,6 +310,12 @@ class Message {
                                                        length,
                                                        destination);
             packets.add(packet);
+        }
+        try {
+            messageStream.close();
+        } catch (IOException e) {
+            System.err.println("Error: IOException while closing file");
+            System.err.println("Exception: " + e);
         }
     }
 
