@@ -242,6 +242,7 @@ class Request {
  * Holds a message to send over UDP
  */
 class Message {
+<<<<<<< HEAD
 	// The data, packetized and ready to send
 	private final Vector<DatagramPacket> packets;
 
@@ -328,5 +329,97 @@ class Message {
 			System.err.println("Exception: " + e);
 		}
 	}
+=======
+    // The data, packetized and ready to send
+    private final Vector<DatagramPacket> packets;
+
+    // The client to send the data to
+    private final InetSocketAddress destination;
+
+    // The socket to send from
+    private final DatagramSocket socket;
+
+    //make message from byte array
+    public Message(byte[] contents, DatagramSocket socket, InetSocketAddress destination) throws SocketException {
+        this.socket = socket;
+        this.destination = destination;
+        packets = new Vector<DatagramPacket>();
+
+
+        // Get buffer size
+        final int DGRAM_SIZE = 1024;
+        final int HEADER_SIZE = 0;
+
+        // break contents into packets
+        for (int i = 0; i * (DGRAM_SIZE - HEADER_SIZE) < contents.length; i++) {
+            int length = DGRAM_SIZE - HEADER_SIZE;
+            if ((i + 1) * length >= contents.length) {
+                length = contents.length - i * length;
+            }
+            DatagramPacket packet = new DatagramPacket(contents,
+                                                       i * (DGRAM_SIZE - HEADER_SIZE),
+                                                       length,
+                                                       destination);
+            packets.add(packet);
+        }
+    }
+
+    //make message from file
+    public Message(File file, DatagramSocket socket, InetSocketAddress destination) throws SocketException, FileNotFoundException {
+        this.socket = socket;
+        this.destination = destination;
+        packets = new Vector<DatagramPacket>();
+
+        //set up file for reading
+        FileInputStream messageStream = new FileInputStream(file);
+
+        // Get buffer size
+        final int DGRAM_SIZE = 1024;
+        final int HEADER_SIZE = 0;
+
+        //break file into packets
+        for (int i = 0; i * (DGRAM_SIZE - HEADER_SIZE) < file.length(); i++) {
+            int length = DGRAM_SIZE - HEADER_SIZE;
+            if ((i + 1) * length >= file.length()) {
+                length = (int) file.length() - i * length;
+            }
+            byte[] chunk = new byte[length];
+            try {
+                messageStream.read(chunk);
+            } catch (IOException e) {
+                System.err.println("Fatal: IOException while reading file");
+                System.err.println("Exception: " + e);
+                System.exit(-1);
+            }
+
+            DatagramPacket packet = new DatagramPacket(chunk,
+                                                       length,
+                                                       destination);
+            packets.add(packet);
+        }
+        try {
+            messageStream.close();
+        } catch (IOException e) {
+            System.err.println("Error: IOException while closing file");
+            System.err.println("Exception: " + e);
+        }
+    }
+
+    //make message from string
+    public Message(String str, DatagramSocket socket, InetSocketAddress destination) throws UnsupportedEncodingException, SocketException {
+        this(str.getBytes("UTF-8"), socket, destination);
+    }
+
+    public void sendMessage() {
+        try {
+            for (int packet = 0; packet < packets.size(); packet++) {
+                socket.send((DatagramPacket) packets.get(packet));
+            }
+        } catch (Exception e) {
+            System.err.println("Error: Caught Exception while trying to send message");
+            System.err.println("Exception: " + e);
+        }
+    }
+>>>>>>> b1fc97123c26f4d68fc3f2f69dfc9df47e29286e
 
 }
