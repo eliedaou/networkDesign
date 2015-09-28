@@ -2,15 +2,17 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.Path;
 import java.util.Scanner;
+import java.util.Vector;
 
 
 public class Client {
+	final static Vector<DatagramPacket> packets = new Vector<DatagramPacket>();
 	public static void main(String args[]) throws Exception {
 		try {
 			// initialize *this socket, the server port and a response variable
 			// with default value null
 			DatagramSocket clientSocket = new DatagramSocket();
-			final int port = 10006;
+			final int port = 12000;
 			Response response = null;
 
 			// setting IP to localhost
@@ -79,6 +81,7 @@ public class Client {
 		}
 	}
 
+	
 	final static void writeTofile(String Path, Response response)
 			throws IOException {
 		File file = new File(Path);
@@ -92,8 +95,6 @@ public class Client {
 			fos.write(packet.getData());
 		}
 		fos.close();
-
-		System.out.println("Done");
 	}
 
 	final static Response getResponse(DatagramSocket socket)

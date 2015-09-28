@@ -61,7 +61,7 @@ class ExitManager implements Runnable {
 class ServerRunnable implements Runnable {
 	// The port to listen on
 	private int port;
-	final static int portNumber = 10006;
+	final static int portNumber = 12000;
 
 	/**
 	 * Sets up the port as -1
@@ -144,7 +144,7 @@ class ServerRunnable implements Runnable {
 	private Request getRequest(DatagramSocket socket) throws SocketException,
 			IOException {
 		// Get buffer size
-		final int DGRAM_SIZE = socket.getReceiveBufferSize();
+		final int DGRAM_SIZE = 1024;
 
 		// Make packet
 		byte[] buffer = new byte[DGRAM_SIZE];
@@ -288,7 +288,7 @@ class Message {
 		FileInputStream messageStream = new FileInputStream(file);
 
 		// Get buffer size
-		final int DGRAM_SIZE = socket.getReceiveBufferSize();
+		final int DGRAM_SIZE = 1024;
 		final int HEADER_SIZE = 0;
 
 		// break file into packets

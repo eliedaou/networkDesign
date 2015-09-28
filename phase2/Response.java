@@ -12,7 +12,7 @@ class Response {
 	// The data, ready to receive
 	final Vector<DatagramPacket> packets;
 
-	private DatagramPacket tempPacket;
+	
 
 	// The socket to send from
 	private final DatagramSocket socket;
@@ -39,6 +39,11 @@ class Response {
 
 	public void receiveMessage() {
 		try {
+			final int DGRAM_SIZE = 1024;
+
+			// Make packet
+			byte[] buffer = new byte[DGRAM_SIZE];
+		    DatagramPacket tempPacket= new DatagramPacket(buffer, DGRAM_SIZE);
 			socket.receive(tempPacket);
 			while (tempPacket.getLength() > 0) {
 				packets.addElement(tempPacket);
