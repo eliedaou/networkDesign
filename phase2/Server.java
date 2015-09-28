@@ -323,6 +323,7 @@ class Message {
 		try {
 			for (int packet = 0; packet < packets.size(); packet++) {
 				socket.send((DatagramPacket) packets.get(packet));
+				Thread.sleep(10);
 			}
 		} catch (Exception e) {
 			System.err

@@ -81,11 +81,11 @@ public class Client {
 			}
 
 			// get, format and output the response
-			response = getResponse(clientSocket);
-			String responseMessage = null;
-			responseMessage = new String(response.getContents());
-			System.out.println("FROM SERVER: " + responseMessage);
-			clientSocket.close();
+			// response = getResponse(clientSocket);
+			// String responseMessage = null;
+			// responseMessage = new String(response.getContents());
+			// System.out.println("FROM SERVER: " + responseMessage);
+			// clientSocket.close();
 		}
 		// do nothing in the catch
 		catch (Exception e) {
@@ -104,8 +104,9 @@ public class Client {
 		// }
 		FileOutputStream fos = new FileOutputStream(file);
 		//Debug
-		System.err.println("writing file");
-		for (DatagramPacket packet : response.packets) {
+		System.err.println("writing " + response.packets.size() + " packets to file");
+		for (int i = 0; i < response.packets.size(); i++) {
+			DatagramPacket packet = response.packets.get(i);
 			fos.write(packet.getData(), packet.getOffset(), packet.getLength());
 		}
 		fos.close();

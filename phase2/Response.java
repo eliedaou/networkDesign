@@ -43,18 +43,22 @@ class Response {
 			final int DGRAM_SIZE = 1024;
 
 			// Make packet
-			byte[] buffer = new byte[DGRAM_SIZE];
-		    DatagramPacket tempPacket= new DatagramPacket(buffer, DGRAM_SIZE);
+			byte[] buffer = null;
+			DatagramPacket tempPacket = null;
 
 			// make socket.receive() stop blocking after a fixed time
-			socket.setSoTimeout(500);
+			socket.setSoTimeout(10000);
 
 			try {
 				while (true) {
+					buffer = new byte[DGRAM_SIZE];
+					tempPacket = new DatagramPacket(buffer, DGRAM_SIZE);
 					socket.receive(tempPacket);
 					//Debug
 					System.err.println("Got packet. Length is " + tempPacket.getLength());
-					packets.addElement(tempPacket);
+					packets.add(tempPacket);
+					//Debug
+					System.err.println("packets has " + packets.size() + " elements");
 				}
 			} catch (SocketTimeoutException e) {
 				// no more packets to receive
