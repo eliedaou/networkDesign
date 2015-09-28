@@ -3,6 +3,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Vector;
 
 class Response {
@@ -12,7 +13,7 @@ class Response {
 	// The data, ready to receive
 	final Vector<DatagramPacket> packets;
 
-	
+
 
 	// The socket to send from
 	private final DatagramSocket socket;
@@ -44,10 +45,19 @@ class Response {
 			// Make packet
 			byte[] buffer = new byte[DGRAM_SIZE];
 		    DatagramPacket tempPacket= new DatagramPacket(buffer, DGRAM_SIZE);
-			socket.receive(tempPacket);
-			while (tempPacket.getLength() > 0) {
-				packets.addElement(tempPacket);
-				socket.receive(tempPacket);
+
+			// make socket.receive() stop blocking after a fixed time
+			socket.setSoTimeout(500);
+
+			try {
+				while (true) {
+					socket.receive(tempPacket);
+					//Debug
+					System.err.println("Got packet. Length is " + tempPacket.getLength());
+					packets.addElement(tempPacket);
+				}
+			} catch (SocketTimeoutException e) {
+				// no more packets to receive
 			}
 		} catch (Exception e) {
 			System.err

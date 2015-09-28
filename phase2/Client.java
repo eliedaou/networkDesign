@@ -18,14 +18,16 @@ public class Client {
 			// setting IP to localhost
 			InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
 
-			System.out.print("Select one of the following:");
-			System.out.print("1.Hello Server!");
-			System.out.print("2.SEND a file");
-			System.out.print("3.EXIT");
+			System.out.println("Select one of the following:");
+			System.out.println("1. Hello Server!");
+			System.out.println("2. SEND a file");
+			System.out.println("3. EXIT");
+			System.out.print("> ");
 			Scanner scanner = new Scanner(System.in);
 			int selection = scanner.nextInt();
 			byte[] sendData = null;
 			String path = null;
+			String savePath = null;
 
 			// String to be sent to the server and getting the bytes from the
 			// string
@@ -35,8 +37,10 @@ public class Client {
 				sendData = requestSentence.getBytes();
 				break;
 			case 2:
-				System.out.print("Input full file path:");
+				System.out.print("Input full file path: ");
 				path = scanner.next().toString();
+				System.out.print("Input save path: ");
+				savePath = scanner.next().toString();
 				sendData = ("SEND " + path).getBytes();
 				break;
 			case 3:
@@ -45,10 +49,14 @@ public class Client {
 				break;
 			}
 
+			//Debug
+			System.err.println("Sending Request");
 			// make the packet(s) and send to server
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, IPAddress, port);
 			clientSocket.send(sendPacket);
+			//Debug
+			System.err.println("Sent request");
 
 			switch (selection) {
 			case 1:
@@ -59,8 +67,12 @@ public class Client {
 				break;
 			case 2:
 				response = new Response(clientSocket);
+				//Debug
+				System.err.println("Getting response");
 				response.receiveMessage();
-				writeTofile(path, response);
+				//Debug
+				System.err.println("Got Response");
+				writeTofile(savePath, response);
 				break;
 			case 3:
 				System.exit(0);
@@ -81,18 +93,20 @@ public class Client {
 		}
 	}
 
-	
+
 	final static void writeTofile(String Path, Response response)
 			throws IOException {
 		File file = new File(Path);
 
 		// if file doesnt exists, then create it
-		if (!file.exists()) {
-			file.createNewFile();
-		}
+		// if (!file.exists()) {
+		// 	file.createNewFile();
+		// }
 		FileOutputStream fos = new FileOutputStream(file);
+		//Debug
+		System.err.println("writing file");
 		for (DatagramPacket packet : response.packets) {
-			fos.write(packet.getData());
+			fos.write(packet.getData(), packet.getOffset(), packet.getLength());
 		}
 		fos.close();
 	}
@@ -100,15 +114,20 @@ public class Client {
 	final static Response getResponse(DatagramSocket socket)
 			throws SocketException, IOException {
 		// Get buffer size
-		final int DGRAM_SIZE = socket.getReceiveBufferSize();
+		final int DGRAM_SIZE = 1024;
 
 		// Make packet
 		byte[] buffer = new byte[DGRAM_SIZE];
 		DatagramPacket packet = new DatagramPacket(buffer, DGRAM_SIZE);
 
+		//Debug
+		System.err.println("Receiving packet");
 		// receive into packet
 		// blocks until received
 		socket.receive(packet);
+
+		//Debug
+		System.err.println("received packet");
 
 		// build Response
 		byte[] contents = new byte[packet.getLength()];
