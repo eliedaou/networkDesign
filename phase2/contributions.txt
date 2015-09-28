@@ -1,0 +1,7 @@
+Grant Moyer:
+    * updated Server.java to read from files and respond to requests for files
+    * debugged Client.java
+
+Elie Daou:
+    * updated Client.java request and recieve files from Server
+    * debugged Client.java

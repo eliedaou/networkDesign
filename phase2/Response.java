@@ -47,7 +47,7 @@ class Response {
 			DatagramPacket tempPacket = null;
 
 			// make socket.receive() stop blocking after a fixed time
-			socket.setSoTimeout(10000);
+			socket.setSoTimeout(500);
 
 			try {
 				while (true) {
