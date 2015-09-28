@@ -49,14 +49,10 @@ public class Client {
 				break;
 			}
 
-			//Debug
-			System.err.println("Sending Request");
 			// make the packet(s) and send to server
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, IPAddress, port);
 			clientSocket.send(sendPacket);
-			//Debug
-			System.err.println("Sent request");
 
 			switch (selection) {
 			case 1:
@@ -67,11 +63,7 @@ public class Client {
 				break;
 			case 2:
 				response = new Response(clientSocket);
-				//Debug
-				System.err.println("Getting response");
 				response.receiveMessage();
-				//Debug
-				System.err.println("Got Response");
 				writeTofile(savePath, response);
 				break;
 			case 3:
@@ -103,8 +95,6 @@ public class Client {
 		// 	file.createNewFile();
 		// }
 		FileOutputStream fos = new FileOutputStream(file);
-		//Debug
-		System.err.println("writing " + response.packets.size() + " packets to file");
 		for (int i = 0; i < response.packets.size(); i++) {
 			DatagramPacket packet = response.packets.get(i);
 			fos.write(packet.getData(), packet.getOffset(), packet.getLength());
@@ -121,14 +111,9 @@ public class Client {
 		byte[] buffer = new byte[DGRAM_SIZE];
 		DatagramPacket packet = new DatagramPacket(buffer, DGRAM_SIZE);
 
-		//Debug
-		System.err.println("Receiving packet");
 		// receive into packet
 		// blocks until received
 		socket.receive(packet);
-
-		//Debug
-		System.err.println("received packet");
 
 		// build Response
 		byte[] contents = new byte[packet.getLength()];
