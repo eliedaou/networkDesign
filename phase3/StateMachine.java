@@ -1,6 +1,6 @@
 public abstract class StateMachine {
-    protected enum Event {}
-    protected enum State {}
+    protected interface Event {}
+    protected interface State {}
 
 
     private State currentState;
@@ -12,7 +12,7 @@ public abstract class StateMachine {
 
     protected abstract State delta(State currentState, Event event);
 
-    public advance(Event event) {
+    public void advance(Event event) {
         currentState = this.delta(currentState, event);
     }
 }
