@@ -1,4 +1,5 @@
 import java.net.DatagramPacket;
+import java.net.SocketAddress;
 
 public class ReceivedPacket {
     private final boolean corrupt;
@@ -6,19 +7,23 @@ public class ReceivedPacket {
     private byte[] checksum;
     private final byte[] data;
     private DatagramPacket packet;
-    
+    private SocketAddress source;
+
     public ReceivedPacket(DatagramPacket packet) {
         this.packet = packet;
         //do not need room for header
         data = new byte[packet.getLength() - 5];
-        
+
         //copy array without header
         System.arraycopy(packet.getData(), packet.getOffset() + 5, data, 0, packet.getLength() - 5);
 
         //get header data
-        seq = data[4];
+        seq = packet.getData()[packet.getOffset() + 4];
         checksum = makeChecksum();
         corrupt = checkCorrupt(packet, checksum);
+
+        //get source address
+        source = packet.getSocketAddress();
     }
 
     public int getSeq() {
@@ -59,5 +64,9 @@ public class ReceivedPacket {
             && checksum[1] == buff[off + 1]
             && checksum[2] == buff[off + 2]
             && checksum[3] == buff[off + 3];
+    }
+
+    public SocketAddress getSource() {
+        return source;
     }
 }
