@@ -2,12 +2,14 @@ import java.net.*;
 import java.util.*;
 import java.io.*;
 
-import ReceiverStateMachine.ReceiverEvent;
-import ReceiverStateMachine.ReceiverState;
-import StateMachine.Event;
-import StateMachine.State;
+
+//import SendingStateMachine.Event;
+//import StateMachine.ReceiverState;
+//import StateMachine.Event;
+//import StateMachine.State;
 
 public class SendingStateMachine extends StateMachine {
+	
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
     }
@@ -15,35 +17,11 @@ public class SendingStateMachine extends StateMachine {
     public SendingStateMachine(SendState stateOfServer) {
         this.sState = stateOfServer;
     }
-	
-	public void whatToDoNext(){
-		while(true){
-			switch (sState) {
-			case SEND_0:
-				SendState.WAIT_FOR_0;
-				break;
-	 
-			case WAIT_FOR_0:
-				SendState.WAIT_FOR_0;
-				break;
-	 
-			case SEND_1:
-				SendState.WAIT_FOR_0;
-				break;
-			case WAIT_FOR_1:
-				SendState.WAIT_FOR_0;
-				break;
-	 
-			default:
-				System.out.println("Google - biggest search giant.. ATT - my carrier provider..");
-				break;
-			}
-		}
-	}
+    
     public class SendingEvent implements Event {
-        private Sender packet;
+        private ServerRecieved packet;
 
-        public SendingEvent(Sender packet){
+        public SendingEvent(ServerRecieved packet){
             this.packet = packet;
         }
 
@@ -55,6 +33,67 @@ public class SendingStateMachine extends StateMachine {
             return packet.getSeq();
         }
     }
+    
+    public Request getRequest(DatagramSocket socket) throws SocketException,IOException {
+		// Get buffer size
+		final int DGRAM_SIZE = 1024;
+
+		// Make packet
+		byte[] buffer = new byte[DGRAM_SIZE];
+		DatagramPacket packet = new DatagramPacket(buffer, DGRAM_SIZE);
+
+		// receive into packet
+		// blocks until received
+		socket.receive(packet);
+
+		// build Request
+		byte[] contents = new byte[packet.getLength()];
+		System.arraycopy(buffer, packet.getOffset(), contents, 0,
+				packet.getLength());
+		Request request = new Request((InetSocketAddress) packet.getSocketAddress(), contents);
+
+		return request;
+	}
+	
+    public void whatToDo(){
+		//open port and start listening
+		final int portNumber = 12000;
+		
+		DatagramSocket serverSocket = new DatagramSocket(portNumber);
+		Request request = getRequest(serverSocket);
+		DatagramSocket sourceSocket = new  DatagramSocket(request.getSource());		
+		DatagramPacket packet = new DatagramPacket
+		while(true){
+			switch (sState) {
+			case SEND_0:
+				
+				break;
+		
+			case WAIT_FOR_0:
+				if ((getSeq() != 00000000) || isCorrupt()) {
+					
+				} else {
+
+				}
+				break;
+		
+			case SEND_1:
+				
+				break;
+			case WAIT_FOR_1:
+				if ((getSeq() != 11111111) || isCorrupt()) {
+					
+				} else {
+
+				}
+				break;
+		
+			default:
+				
+				break;
+			}
+		}
+	}
 
     protected State delta(State currentState, Event event) {
         return delta((SendState) currentState, (SendingEvent) event);
@@ -79,8 +118,7 @@ public class SendingStateMachine extends StateMachine {
                     return SendState.WAIT_FOR_1;
                 }
         }
-        //Should never be reached
-        throw new Exception("Illegal state or event");
+
     }
 
     protected State initialState() {
@@ -89,3 +127,6 @@ public class SendingStateMachine extends StateMachine {
 
 
 }
+
+
+
