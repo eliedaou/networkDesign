@@ -2,21 +2,23 @@ import java.net.DatagramPacket;
 
 public class ReceivedPacket {
     private final boolean corrupt;
-    private final seq;
+    private final int seq;
     private byte[] checksum;
     private final byte[] data;
-
+    private DatagramPacket packet;
+    
     public ReceivedPacket(DatagramPacket packet) {
         this.packet = packet;
         //do not need room for header
         data = new byte[packet.getLength() - 5];
+        
         //copy array without header
         System.arraycopy(packet.getData(), packet.getOffset() + 5, data, 0, packet.getLength() - 5);
 
         //get header data
         seq = data[4];
         checksum = makeChecksum();
-        corrupt = checkCorrupt(packet, checksum)
+        corrupt = checkCorrupt(packet, checksum);
     }
 
     public int getSeq() {
@@ -53,9 +55,9 @@ public class ReceivedPacket {
         int off = packet.getOffset();
         int len = packet.getLength();
 
-        return check[0] == buff[off]
-            && check[1] == buff[off + 1]
-            && check[2] == buff[off + 2]
-            && check[3] == buff[off + 3];
+        return checksum[0] == buff[off]
+            && checksum[1] == buff[off + 1]
+            && checksum[2] == buff[off + 2]
+            && checksum[3] == buff[off + 3];
     }
 }

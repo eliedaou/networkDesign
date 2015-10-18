@@ -2,7 +2,6 @@ public abstract class StateMachine {
     protected interface Event {}
     protected interface State {}
 
-
     private State currentState;
     protected abstract State initialState();
 

@@ -1,11 +1,13 @@
-import java.net.DatagramPacket;
+import java.net.*;
+import java.util.*;
+import java.io.*;
 
-public class ReceiverStateMachine extends StateMachine {
+public class SenderStateMachine extends StateMachine {
     private boolean onceThrough;
-    public class ReceiverEvent implements Event {
-        private ReceivedPacket packet;
+    public class SenderEvent implements Event {
+        private Packet packet;
 
-        public ReceiverEvent(@NotNull ReceivedPacket packet){
+        public SenderEvent(@NotNull Packet packet){
             this.packet = packet;
         }
 
@@ -13,12 +15,12 @@ public class ReceiverStateMachine extends StateMachine {
             return packet.isCorrupt();
         }
 
-        public int getSeq() {
+        public boolean getSeq() {
             return packet.getSeq();
         }
     }
 
-    protected enum ReceiverState implements State {
+    protected enum SenderState implements State {
         WAIT_FOR_0,
         WAIT_FOR_1
     }
