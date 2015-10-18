@@ -8,11 +8,42 @@ import StateMachine.Event;
 import StateMachine.State;
 
 public class SendingStateMachine extends StateMachine {
-    private boolean onceThrough;
+	protected enum SendState implements State {
+        SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
+    }
+	SendState sState;
+    public SendingStateMachine(SendState stateOfServer) {
+        this.sState = stateOfServer;
+    }
+	
+	public void whatToDoNext(){
+		while(true){
+			switch (sState) {
+			case SEND_0:
+				SendState.WAIT_FOR_0;
+				break;
+	 
+			case WAIT_FOR_0:
+				SendState.WAIT_FOR_0;
+				break;
+	 
+			case SEND_1:
+				SendState.WAIT_FOR_0;
+				break;
+			case WAIT_FOR_1:
+				SendState.WAIT_FOR_0;
+				break;
+	 
+			default:
+				System.out.println("Google - biggest search giant.. ATT - my carrier provider..");
+				break;
+			}
+		}
+	}
     public class SendingEvent implements Event {
-        private SendingPacket packet;
+        private Sender packet;
 
-        public SendingEvent(ReceivedPacket packet){
+        public SendingEvent(Sender packet){
             this.packet = packet;
         }
 
@@ -25,18 +56,11 @@ public class SendingStateMachine extends StateMachine {
         }
     }
 
-    protected enum SendState implements State {
-        SEND_0,
-    	WAIT_FOR_0,
-    	SEND_1,
-        WAIT_FOR_1
-    }
-
     protected State delta(State currentState, Event event) {
-        return delta((ReceiverState) currentState, (ReceiverEvent) event);
+        return delta((SendState) currentState, (SendingEvent) event);
     }
 
-    protected ReceiverState delta(ReceiverState currentState, ReceiverEvent event) {
+    protected SendState delta(SendState currentState, SendingEvent event) {
         switch (currentState) {
         	case SEND_0:
 	               return SendState.WAIT_FOR_0;
@@ -47,12 +71,12 @@ public class SendingStateMachine extends StateMachine {
                     return SendState.WAIT_FOR_0;
                 }
         	case SEND_1:
-                    return ReceiverState.WAIT_FOR_1;
+                    return SendState.WAIT_FOR_1;
         	case WAIT_FOR_1:
                 if (!event.isCorrupt() && (event.getSeq() == 1)) {
-                    return ReceiverState.WAIT_FOR_0;
+                    return SendState.WAIT_FOR_0;
                 } else if (event.isCorrupt() || (event.getSeq() != 1)) {
-                    return ReceiverState.WAIT_FOR_1;
+                    return SendState.WAIT_FOR_1;
                 }
         }
         //Should never be reached
@@ -60,10 +84,8 @@ public class SendingStateMachine extends StateMachine {
     }
 
     protected State initialState() {
-        return ReceiverState.WAIT_FOR_0;
+        return SendState.WAIT_FOR_0;
     }
 
-    public ReceiverStateMachine() {
-        onceThrough = false;
-    }
+
 }

@@ -8,16 +8,6 @@ public class Sender {
     private final byte[] data;
     private DatagramPacket packet;
     
-    public Sender(){
-    	DatagramSocket serverSocket = new DatagramSocket();
-    	InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
-    	final int port = 12000;
-    	byte[] sendData = null;
-    	//DatagramSocket clientSocket = new DatagramSocket();
-		DatagramPacket sendPacket = new DatagramPacket(sendData,sendData.length, IPAddress, port);
-		serverSocket.send(sendPacket);
-		serverSocket.close();
-    }
     public Sender(DatagramPacket packet) {
         this.packet = packet;
         /*
@@ -59,6 +49,6 @@ public class Sender {
         byte[] buff = packet.getData();
         int off = packet.getOffset();
 
-        return checksum[0] == buff[off];
+        return checksum[0] == buff[off/* -1 */ ];
     }
 }
