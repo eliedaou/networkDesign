@@ -1,10 +1,18 @@
+import java.net.*;
+import java.util.*;
+import java.io.*;
 
-public class ReceiverStateMachine extends StateMachine {
+import ReceiverStateMachine.ReceiverEvent;
+import ReceiverStateMachine.ReceiverState;
+import StateMachine.Event;
+import StateMachine.State;
+
+public class SendingStateMachine extends StateMachine {
     private boolean onceThrough;
-    public class ReceiverEvent implements Event {
-        private ReceivedPacket packet;
+    public class SendingEvent implements Event {
+        private SendingPacket packet;
 
-        public ReceiverEvent(ReceivedPacket packet){
+        public SendingEvent(ReceivedPacket packet){
             this.packet = packet;
         }
 
@@ -17,8 +25,10 @@ public class ReceiverStateMachine extends StateMachine {
         }
     }
 
-    protected enum ReceiverState implements State {
-        WAIT_FOR_0,
+    protected enum SendState implements State {
+        SEND_0,
+    	WAIT_FOR_0,
+    	SEND_1,
         WAIT_FOR_1
     }
 
@@ -28,13 +38,17 @@ public class ReceiverStateMachine extends StateMachine {
 
     protected ReceiverState delta(ReceiverState currentState, ReceiverEvent event) {
         switch (currentState) {
-            case WAIT_FOR_0:
+        	case SEND_0:
+	               return SendState.WAIT_FOR_0;
+        	case WAIT_FOR_0:
                 if (!event.isCorrupt() && (event.getSeq() == 0)) {
-                    return ReceiverState.WAIT_FOR_1;
+                    return SendState.WAIT_FOR_1;
                 } else if (event.isCorrupt() || (event.getSeq() != 0)) {
-                    return ReceiverState.WAIT_FOR_0;
+                    return SendState.WAIT_FOR_0;
                 }
-            case WAIT_FOR_1:
+        	case SEND_1:
+                    return ReceiverState.WAIT_FOR_1;
+        	case WAIT_FOR_1:
                 if (!event.isCorrupt() && (event.getSeq() == 1)) {
                     return ReceiverState.WAIT_FOR_0;
                 } else if (event.isCorrupt() || (event.getSeq() != 1)) {
