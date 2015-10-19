@@ -1,7 +1,7 @@
 import java.net.*;
 import java.util.*;
 import java.io.*;
-
+import java.util.Vector;
 
 //import SendingStateMachine.Event;
 //import StateMachine.ReceiverState;
@@ -9,19 +9,33 @@ import java.io.*;
 //import StateMachine.State;
 
 public class SendingStateMachine extends StateMachine {
+	Vector<DatagramPacket> packets = new Vector<DatagramPacket>();
+	ServerReceived incomingPacket;
+	private DatagramSocket socket;
+	private Sender serverProcess = new Sender();
 	
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
     }
+	
 	SendState sState;
-    public SendingStateMachine(SendState stateOfServer) {
+    
+	public SendingStateMachine(SendState stateOfServer) {
         this.sState = stateOfServer;
     }
     
+    public void SendingEvent(ServerReceived packet){
+        this.incomingPacket = packet;
+    }
+    
+    public SendingStateMachine(DatagramSocket socket) {
+        this.socket = socket;
+    }
+    
     public class SendingEvent implements Event {
-        private ServerRecieved packet;
+        private ServerReceived packet;
 
-        public SendingEvent(ServerRecieved packet){
+        public SendingEvent(ServerReceived packet){
             this.packet = packet;
         }
 
@@ -33,99 +47,76 @@ public class SendingStateMachine extends StateMachine {
             return packet.getSeq();
         }
     }
-    
-    public Request getRequest(DatagramSocket socket) throws SocketException,IOException {
-		// Get buffer size
-		final int DGRAM_SIZE = 1024;
-
-		// Make packet
-		byte[] buffer = new byte[DGRAM_SIZE];
-		DatagramPacket packet = new DatagramPacket(buffer, DGRAM_SIZE);
-
-		// receive into packet
-		// blocks until received
-		socket.receive(packet);
-
-		// build Request
-		byte[] contents = new byte[packet.getLength()];
-		System.arraycopy(buffer, packet.getOffset(), contents, 0,
-				packet.getLength());
-		Request request = new Request((InetSocketAddress) packet.getSocketAddress(), contents);
-
-		return request;
-	}
-	
-    public void whatToDo(){
-		//open port and start listening
-		final int portNumber = 12000;
-		
-		DatagramSocket serverSocket = new DatagramSocket(portNumber);
-		Request request = getRequest(serverSocket);
-		DatagramSocket sourceSocket = new  DatagramSocket(request.getSource());		
-		DatagramPacket packet = new DatagramPacket
-		while(true){
-			switch (sState) {
-			case SEND_0:
-				
-				break;
-		
-			case WAIT_FOR_0:
-				if ((getSeq() != 00000000) || isCorrupt()) {
-					
-				} else {
-
-				}
-				break;
-		
-			case SEND_1:
-				
-				break;
-			case WAIT_FOR_1:
-				if ((getSeq() != 11111111) || isCorrupt()) {
-					
-				} else {
-
-				}
-				break;
-		
-			default:
-				
-				break;
-			}
-		}
-	}
-
+ 
     protected State delta(State currentState, Event event) {
         return delta((SendState) currentState, (SendingEvent) event);
+        
     }
 
-    protected SendState delta(SendState currentState, SendingEvent event) {
-        switch (currentState) {
-        	case SEND_0:
-	               return SendState.WAIT_FOR_0;
-        	case WAIT_FOR_0:
-                if (!event.isCorrupt() && (event.getSeq() == 0)) {
-                    return SendState.WAIT_FOR_1;
-                } else if (event.isCorrupt() || (event.getSeq() != 0)) {
-                    return SendState.WAIT_FOR_0;
-                }
-        	case SEND_1:
-                    return SendState.WAIT_FOR_1;
-        	case WAIT_FOR_1:
-                if (!event.isCorrupt() && (event.getSeq() == 1)) {
-                    return SendState.WAIT_FOR_0;
-                } else if (event.isCorrupt() || (event.getSeq() != 1)) {
-                    return SendState.WAIT_FOR_1;
-                }
-        }
+	protected SendState delta(SendState currentState, SendingEvent event) {
+		
+		makePackets(Sender.fileToSend);
+		
+		switch (currentState) {
+		case SEND_0:
+			sendPacket(0, Sender.sourceSocket);
+			Sender.sourceSocket.close();
+			return SendState.WAIT_FOR_0;
+		case WAIT_FOR_0:
+			if (event.isCorrupt() || (event.getSeq() != 0)) {
+				sendPacket(0, Sender.sourceSocket);
+				sourceSocket.close();
 
-    }
+			} else {
+				sourceSocket.close();
+				return SendState.SEND_1;
+			}
+		case SEND_1:
+			sourceSocket.close();
+			return SendState.WAIT_FOR_1;
+		case WAIT_FOR_1:
+			if (event.isCorrupt() || (event.getSeq() != 1)) {
+				sourceSocket.close();
+				return SendState.WAIT_FOR_1;
+			} else {
+				sourceSocket.close();
+				return SendState.SEND_1;
+			}
+		default:
+			sourceSocket.close();
+			return SendState.SEND_0;
+		}
+	}
+	
 
     protected State initialState() {
-        return SendState.WAIT_FOR_0;
+        return SendState.SEND_0;
     }
 
-
+    private void makePackets(byte[] contents){
+    	
+    	for (int i = 0; i * (1500) < contents.length; i++) {
+			int length = 1500;
+			if ((i + 1) * length >= contents.length) {
+				length = contents.length - i * length;
+			}
+			DatagramPacket packet = new DatagramPacket(contents, i*1024, 1024);
+			packets.add(packet);
+		}
+    }
+    
+    private void sendPacket(byte seq, DatagramSocket dest) {
+        byte[] header = {seq};
+        
+        try {
+            dest.send(packets.elementAt(0));
+            packets.remove(0);
+        } catch (IOException e) {
+            System.err.println("Error: exception caught while sending ACK");
+            System.err.println("\tException: " + e);
+        }
+    }
+    
 }
 
 
