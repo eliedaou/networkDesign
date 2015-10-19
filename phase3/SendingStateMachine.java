@@ -4,11 +4,6 @@ import java.io.*;
 import java.util.Vector;
 import java.lang.Math;
 
-//import SendingStateMachine.Event;
-//import StateMachine.ReceiverState;
-//import StateMachine.Event;
-//import StateMachine.State;
-
 public class SendingStateMachine extends StateMachine {
 	private DatagramSocket socket;
 	private InetAddress remoteAddress;
