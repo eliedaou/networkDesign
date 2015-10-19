@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
      private static boolean onceThrough;
     private DatagramSocket socket;
     
-    public class ReceiverEvent implements Event {
+    public static class ReceiverEvent implements Event {
          private ReceivedPacket packet;
         private FileOutputStream fOut;
  
@@ -112,12 +112,12 @@ import java.io.FileOutputStream;
          return ReceiverState.WAIT_FOR_0;
      }
  
-    public void ReceiverStateMachine(DatagramSocket socket) {
+    public ReceiverStateMachine(DatagramSocket socket) {
     	onceThrough = false;
     	this.socket = socket;
     }
     
-    public void ReceiverStateMachine() {
+    public ReceiverStateMachine() {
          onceThrough = false;    
     }
 
