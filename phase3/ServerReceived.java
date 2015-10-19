@@ -15,9 +15,6 @@ public class ServerReceived {
         ack = false;
         this.data = data;
 
-        checksum = makeChecksum();
-        System.arraycopy(checksum, 0, data, 0, 4);
-
         this.address = address;
         this.port = port;
         corrupt = false;
@@ -25,23 +22,6 @@ public class ServerReceived {
 
     public byte[] getData() {
         return data;
-    }
-
-    private byte[] makeChecksum() {
-        byte[] check = new byte[4];
-        byte[] buff = data;
-        int off = 4;
-        int len = data.length - 4;
-
-        //xor every group of 32 bits in the data including seq
-        for (int i = 0; i < len; i += 4) {
-            check[0] ^= buff[off + i];
-            if (i + 1 < len) check[1] ^= buff[off + i + 1];
-            if (i + 2 < len) check[2] ^= buff[off + i + 2];
-            if (i + 3 < len) check[3] ^= buff[off + i + 3];
-        }
-
-        return check;
     }
 
     public ServerReceived(DatagramPacket packet) {

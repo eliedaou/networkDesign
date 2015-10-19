@@ -73,6 +73,7 @@ public class SendManager implements Runnable {
         byte[] receivedBuffer = new byte[1500];
         byte[] data;
         int bytesRead;
+        long total = 0;
         try {
             while ((bytesRead = fIn.read(sendBuffer, 5, sendBuffer.length - 5)) != -1) {
                 //make data array of correct size
@@ -101,6 +102,8 @@ public class SendManager implements Runnable {
                     //give event to the state machine
                     machine.advance(event);
                 }
+                total += bytesRead;
+                //System.out.println(total + "bytes sent");
             }
         } catch (IOException e) {
             System.err.println("Fatal: exception caugth while reading file");

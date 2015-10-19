@@ -95,6 +95,9 @@ public class SendingStateMachine extends StateMachine {
 		byte[] data = event.getData();
 		data[4] = seq;
 
+		byte[] checksum = makeChecksum(data);
+		System.arraycopy(checksum, 0, data, 0, 4);
+
 		DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress, remotePort);
 		try {
 			socket.send(packet);
@@ -108,5 +111,22 @@ public class SendingStateMachine extends StateMachine {
 	public boolean isWaitingForAck() {
 		return currentState == SendState.WAIT_FOR_0 || currentState == SendState.WAIT_FOR_1;
 	}
+
+    private byte[] makeChecksum(byte[] data) {
+        byte[] check = new byte[4];
+        byte[] buff = data;
+        int off = 4;
+        int len = data.length - 4;
+
+        //xor every group of 32 bits in the data including seq
+        for (int i = 0; i < len; i += 4) {
+            check[0] ^= buff[off + i];
+            if (i + 1 < len) check[1] ^= buff[off + i + 1];
+            if (i + 2 < len) check[2] ^= buff[off + i + 2];
+            if (i + 3 < len) check[3] ^= buff[off + i + 3];
+        }
+
+        return check;
+    }
 
 }
