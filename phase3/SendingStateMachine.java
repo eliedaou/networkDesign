@@ -90,7 +90,6 @@ public class SendingStateMachine extends StateMachine {
 		return currentState;
 	}
 
-
     protected State initialState() {
         return SendState.SEND_0;
     }
