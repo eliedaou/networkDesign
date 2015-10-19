@@ -9,10 +9,10 @@ import java.util.Vector;
 //import StateMachine.State;
 
 public class SendingStateMachine extends StateMachine {
-	Vector<DatagramPacket> packets = new Vector<DatagramPacket>();
-	ServerReceived incomingPacket;
 	private DatagramSocket socket;
-	private Sender serverProcess = new Sender();
+	private InetAddress remoteAddress;
+	private int remotePort;
+	private SendingEvent prevEvent;
 
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
@@ -28,8 +28,13 @@ public class SendingStateMachine extends StateMachine {
         this.incomingPacket = packet;
     }
 
-    public SendingStateMachine(DatagramSocket socket) {
+    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort) {
         this.socket = socket;
+
+		this.remoteAddress = remoteAddress;
+		this.remotePort = remotePort;
+
+		prevEvent = null;
     }
 
     public static class SendingEvent implements Event {
@@ -66,28 +71,28 @@ public class SendingStateMachine extends StateMachine {
 		makePackets(Sender.fileToSend);
 
 		switch (currentState) {
-		case SEND_0:
-			sendPacket((byte)0, socket);
-			return SendState.WAIT_FOR_0;
-		case WAIT_FOR_0:
-			if (event.isCorrupt() || (event.getSeq() != 0)) {
-				sendPacket((byte)0, socket);
-
-			} else {
-				return SendState.SEND_1;
-			}
-		case SEND_1:
-			sendPacket((byte)1, socket);
-			return SendState.WAIT_FOR_1;
-		case WAIT_FOR_1:
-			if (event.isCorrupt() || (event.getSeq() != 1)) {
-				sendPacket((byte)1, socket);
+			case SEND_0:
+				sendPacket(event, (byte) 0);
+				prevEvent = event;
+				return SendState.WAIT_FOR_0;
+			case WAIT_FOR_0:
+				if (event.isCorrupt() || (event.getSeq() != 0)) {
+					sendPacket(prevEvent, (byte) 0);
+					return SendState.WAIT_FOR_0;
+				} else {
+					return SendState.SEND_1;
+				}
+			case SEND_1:
+				sendPacket(event, (byte) 1);
+				prevEvent = event;
 				return SendState.WAIT_FOR_1;
-			} else {
-				return SendState.SEND_1;
-			}
-		default:
-			return SendState.SEND_0;
+			case WAIT_FOR_1:
+				if (event.isCorrupt() || (event.getSeq() != 1)) {
+					sendPacket(prevEvent, (byte) 1);
+					return SendState.WAIT_FOR_1;
+				} else {
+					return SendState.SEND_0;
+				}
 		}
 	}
 
@@ -110,40 +115,12 @@ public class SendingStateMachine extends StateMachine {
 
 
 
-    private void sendPacket(byte seq, DatagramSocket dest) {
-    	byte[] check = new byte[4];
-        byte[] buff = packets.elementAt(0).getData();
-        int len = packets.elementAt(0).getLength();
+    private void sendPacket(SendingEvent event, byte seq) {
+		byte[] data = event.getData();
+		data[4] = seq;
 
-        //xor every group of 32 bits in the data including seq
-        for (int i = 0; i < len; i += 4) {
-            check[0] ^= buff[i];
-            if (i + 1 < len) check[1] ^= buff[i + 1];
-            if (i + 2 < len) check[2] ^= buff[i + 2];
-            if (i + 3 < len) check[3] ^= buff[i + 3];
-        }
-
-    	byte[] sequenceNum = {seq};
-    	DatagramPacket packetToSend;
-    	byte[] header = new byte[sequenceNum.length + check.length];
-    	System.arraycopy(check, 0, header, 0, check.length);
-    	System.arraycopy(sequenceNum, 0, header, check.length, sequenceNum.length);
-
-    	byte[] data = packets.elementAt(0).getData();
-    	packets.remove(0);
-
-    	byte[] toBeSent = new byte[data.length + header.length];
-    	System.arraycopy(header, 0, toBeSent, 0, header.length);
-    	System.arraycopy(data, 0, toBeSent, header.length, data.length);
-
-
-        try {
-        	packetToSend = new DatagramPacket(toBeSent, toBeSent.length);
-            dest.send(packetToSend);
-        } catch (IOException e) {
-            System.err.println("Error: exception caught while sending ACK");
-            System.err.println("\tException: " + e);
-        }
+		DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress, remotePort);
+		socket.send(packet);
     }
 
 	public isWaitingForAck() {

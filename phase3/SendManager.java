@@ -40,7 +40,7 @@ public class SendManager implements Runnable {
         }));
 
         //start state machine
-        machine = new SendingStateMachine(socket);
+        machine = new SendingStateMachine(socket, remoteAddress, remotePort);
 
         //keep file input stream
         this.fIn = fIn;
@@ -61,6 +61,7 @@ public class SendManager implements Runnable {
         ServerReceived packet;
         SendingStateMachine.SendingEvent event;
         byte[] sendBuffer = new byte[1024];
+        byte[] receivedBuffer = new byte[1500];
         byte[] data;
         int bytesRead;
         while ((bytesRead = fIn.read(sendBuffer, 5, sendBuffer.length - 5)) != -1) {
