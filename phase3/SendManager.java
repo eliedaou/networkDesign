@@ -18,7 +18,7 @@ public class SendManager implements Runnable {
     public InetSocketAddress sourceSocket(){
     	return this.sourceSocket;
     }
-    public SendManager(FileInputStream fIn) {
+    public SendManager(FileInputStream fIn, double ackError, double dataError) {
         //temporary variable needed for try-catch
         try {
             //open socket on specified port
