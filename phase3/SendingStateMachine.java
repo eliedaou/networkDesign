@@ -63,7 +63,7 @@ public class SendingStateMachine extends StateMachine {
 			return SendState.WAIT_FOR_0;
 		case WAIT_FOR_0:
 			if (event.isCorrupt() || (event.getSeq() != 0)) {
-				sendPacket(0, socket);
+				sendPacket((byte)0, socket);
 
 			} else {
 				return SendState.SEND_1;
@@ -79,7 +79,6 @@ public class SendingStateMachine extends StateMachine {
 				return SendState.SEND_1;
 			}
 		default:
-			sourceSocket.close();
 			return SendState.SEND_0;
 		}
 	}

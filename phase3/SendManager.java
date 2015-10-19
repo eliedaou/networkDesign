@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class SendManager implements Runnable {
     private SendingStateMachine machine = null;
-    private DatagramSocket serverSocket = null;
+    private DatagramSocket socket = null;
     private InetSocketAddress sourceSocket = null;
     private Request request;
 
@@ -23,10 +23,10 @@ public class SendManager implements Runnable {
         try {
             //open socket on specified port
             socket = new DatagramSocket();
-            System.out.println("Opened socket on port " + serverSocket.getLocalPort());
+            System.out.println("Opened socket on port " + socket.getLocalPort());
 
             //start state machine
-            machine = new SendingStateMachine(serverSocket);
+            machine = new SendingStateMachine(socket);
         } catch (IOException e) {
             System.err.println("Fatal: exception caugth while opening socket");
             System.err.println("\tException: " + e);
@@ -46,9 +46,9 @@ public class SendManager implements Runnable {
             try {
                 //get a packet from the client
                 dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
-                serverSocket.receive(dataPacket);
+                socket.receive(dataPacket);
 
-                request = getRequest(serverSocket);
+                request = getRequest(socket);
                 sourceSocket = request.getSource();
 
                 //build an event

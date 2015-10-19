@@ -12,9 +12,9 @@ public class Sender {
 
     public static void main(String [] args) {
 		//get a file name
-		System.out.println("Enter a file to read from:")
+		System.out.println("Enter a file to read from:");
 		Scanner scan = new Scanner(System.in);
-		String path = null
+		String path = null;
 		try{
 			path = scan.nextLine();
 		} catch (Exception e) {
@@ -33,7 +33,7 @@ public class Sender {
 		try{
 			bitLoss = scan.nextInt();
 			if (bitLoss == 2 || bitLoss == 3) {
-				System.out.println("Enter desired ratio of error, [0,1]:")
+				System.out.println("Enter desired ratio of error, [0,1]:");
 				errorRatio = scan.nextFloat();
 			}
 		} catch (Exception e) {
