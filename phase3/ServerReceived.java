@@ -6,13 +6,13 @@ public class ServerReceived {
     private byte seq;
     private byte[] checksum;
     private DatagramPacket packet;
-    private final boolean isAck;
+    private final boolean ack;
     private byte[] data;
     private int port;
     private InetAddress address;
 
     public ServerReceived(byte[] data, InetAddress address, int port) {
-        isAck = false;
+        ack = false;
         this.data = data;
 
         checksum = makeChecksum();
@@ -20,9 +20,10 @@ public class ServerReceived {
 
         this.address = address;
         this.port = port;
+        corrupt = false;
     }
 
-    public getData() {
+    public byte[] getData() {
         return data;
     }
 
@@ -61,7 +62,7 @@ public class ServerReceived {
         //check for corruption between checksum and data
         corrupt = checkCorrupt(packet, checksum);
 
-        isAck = true;
+        ack = true;
     }
 
     public byte getSeq() {
@@ -70,6 +71,10 @@ public class ServerReceived {
 
     public boolean isCorrupt() {
         return corrupt;
+    }
+
+    public boolean isAck() {
+        return ack;
     }
 
     private boolean checkCorrupt(DatagramPacket packet, byte[] checksum) {

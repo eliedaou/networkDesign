@@ -20,14 +20,6 @@ public class SendingStateMachine extends StateMachine {
 
 	SendState sState;
 
-	public SendingStateMachine(SendState stateOfServer) {
-        this.sState = stateOfServer;
-    }
-
-    public void SendingEvent(ServerReceived packet){
-        this.incomingPacket = packet;
-    }
-
     public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort) {
         this.socket = socket;
 
@@ -52,7 +44,7 @@ public class SendingStateMachine extends StateMachine {
             return packet.getSeq();
         }
 
-		public int getData() {
+		public byte[] getData() {
 			return packet.getData();
 		}
 
@@ -67,9 +59,6 @@ public class SendingStateMachine extends StateMachine {
     }
 
 	protected SendState delta(SendState currentState, SendingEvent event) {
-
-		makePackets(Sender.fileToSend);
-
 		switch (currentState) {
 			case SEND_0:
 				sendPacket(event, (byte) 0);
@@ -94,6 +83,7 @@ public class SendingStateMachine extends StateMachine {
 					return SendState.SEND_0;
 				}
 		}
+		return currentState;
 	}
 
 
@@ -101,29 +91,21 @@ public class SendingStateMachine extends StateMachine {
         return SendState.SEND_0;
     }
 
-    private void makePackets(byte[] contents){
-
-    	for (int i = 0; i * (1500) < contents.length; i++) {
-			int length = 1500;
-			if ((i + 1) * length >= contents.length) {
-				length = contents.length - i * length;
-			}
-			DatagramPacket packet = new DatagramPacket(contents, i*1024, 1024);
-			packets.add(packet);
-		}
-    }
-
-
-
     private void sendPacket(SendingEvent event, byte seq) {
 		byte[] data = event.getData();
 		data[4] = seq;
 
 		DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress, remotePort);
-		socket.send(packet);
+		try {
+			socket.send(packet);
+		} catch (IOException e) {
+			System.err.println("Fatal: exception caugth while sending data packet");
+			System.err.println("\tException: " + e);
+			System.exit(-1);
+		}
     }
 
-	public isWaitingForAck() {
+	public boolean isWaitingForAck() {
 		return currentState == SendState.WAIT_FOR_0 || currentState == SendState.WAIT_FOR_1;
 	}
 

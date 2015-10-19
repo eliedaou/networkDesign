@@ -3,7 +3,7 @@ public abstract class StateMachine {
     protected interface Event {}
 
 
-    private State currentState;
+    protected State currentState;
     protected abstract State initialState();
 
     public StateMachine() {
