@@ -9,7 +9,6 @@ import java.net.InetSocketAddress;
 public class Sender {
 	public static byte [] fileToSend = null;
 	public static InetSocketAddress sourceSocket = null;
-	static double numberNeeded;
 
     public static void main(String [] args) {
 		//get a file name
@@ -30,12 +29,12 @@ public class Sender {
 		System.out.println("\t2. ACK bit errors");
 		System.out.println("\t3. Data loss");
 		int bitLoss = 1;
-		float errorPercent = 0;
+		double errorRatio = 0;
 		try{
 			bitLoss = scan.nextInt();
 			if (bitLoss == 2 || bitLoss == 3) {
-				System.out.println("Enter desired percent error (input '25' for 25% error):");
-				errorPercent = scan.nextFloat();
+				System.out.println("Enter desired ratio of error, between 0 and 1:");
+				errorRatio = scan.nextDouble();
 			}
 		} catch (Exception e) {
             System.err.println("Fatal: exception caught while prompting for bit error options");
@@ -43,8 +42,7 @@ public class Sender {
             System.exit(-1);
 		}
 		if (bitLoss < 1 || bitLoss > 3) bitLoss = 1;
-		if (errorPercent < 0 || errorPercent > 100) errorPercent = 0;
-		else numberNeeded = 100/errorPercent;
+		if (errorRatio < 0 || errorRatio > 1) errorRatio = 0;
 
 		//open the file for reading
 		File file = new File(path);
@@ -77,10 +75,10 @@ public class Sender {
 				(new SendManager(fIn, 0 , 0)).run();
 				break;
 			case 2:
-				(new SendManager(fIn, numberNeeded, 0)).run();
+				(new SendManager(fIn, errorRatio, 0)).run();
 				break;
 			case 3:
-				(new SendManager(fIn, 0, numberNeeded)).run();
+				(new SendManager(fIn, 0, errorRatio)).run();
 				break;
 		}
     }

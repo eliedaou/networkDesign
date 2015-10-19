@@ -15,7 +15,7 @@ public class SendingStateMachine extends StateMachine {
 	private int remotePort;
 	private SendingEvent prevEvent;
     private static double ackError;
-    private double dataError;
+    private static double dataError;
 
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
@@ -25,7 +25,8 @@ public class SendingStateMachine extends StateMachine {
 
     public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError, double dataError) {
         this.socket = socket;
-
+        this.ackError = ackError;
+        this.dataError = dataError;
 		this.remoteAddress = remoteAddress;
 		this.remotePort = remotePort;
 
@@ -40,7 +41,12 @@ public class SendingStateMachine extends StateMachine {
         }
 
         public boolean isCorrupt() {
-            return packet.isCorrupt();
+ 			double checkIfBitError = Math.random();
+ 			if (checkIfBitError < ackError) {
+ 				return true;
+ 			}
+ 			
+        	return packet.isCorrupt();
         }
 
         public int getSeq() {
@@ -52,12 +58,6 @@ public class SendingStateMachine extends StateMachine {
 		}
 
 		public boolean isAck() {
-			 if (ackError != 0 ) {
-				int checkIfBitError = randomWithRange(0, ackError);
-				if (checkIfBitError == 0) {
-					return (byte)0==1;
-				}
-			}
 			return packet.isAck();
 		}
     }
@@ -120,28 +120,13 @@ public class SendingStateMachine extends StateMachine {
 	public boolean isWaitingForAck() {
 		return currentState == SendState.WAIT_FOR_0 || currentState == SendState.WAIT_FOR_1;
 	}
-
-	private static int randomWithRange(float min, double max){
-	   double range = (max - min) + 1;     
-	   return (int)Math.round(((Math.random() * range) + min));
-	}
-	
 	
     private byte[] makeChecksum(byte[] data) {
         byte[] check = new byte[4];
         byte[] buff = data;
         int off = 4;
         int len = data.length - 4;
-        
-        if (dataError != 0 ) {
-			int checkIfBitError = randomWithRange(0, dataError);
-			if (checkIfBitError == 0) {
-				data[len] = (byte)11111;
-			}
-		}
-        
-        
-        
+  
         //xor every group of 32 bits in the data including seq
         for (int i = 0; i < len; i += 4) {
             check[0] ^= buff[off + i];
@@ -149,7 +134,12 @@ public class SendingStateMachine extends StateMachine {
             if (i + 2 < len) check[2] ^= buff[off + i + 2];
             if (i + 3 < len) check[3] ^= buff[off + i + 3];
         }
-
+        
+		double checkIfBitError = Math.random();
+		if (checkIfBitError < dataError) {
+			data[4] = (byte)4;
+		}
+        
         return check;
     }
 
