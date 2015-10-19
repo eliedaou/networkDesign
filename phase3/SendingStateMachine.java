@@ -2,6 +2,7 @@ import java.net.*;
 import java.util.*;
 import java.io.*;
 import java.util.Vector;
+import java.lang.Math;
 
 //import SendingStateMachine.Event;
 //import StateMachine.ReceiverState;
@@ -13,6 +14,8 @@ public class SendingStateMachine extends StateMachine {
 	private InetAddress remoteAddress;
 	private int remotePort;
 	private SendingEvent prevEvent;
+    private static double ackError;
+    private double dataError;
 
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
@@ -20,7 +23,7 @@ public class SendingStateMachine extends StateMachine {
 
 	SendState sState;
 
-    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort) {
+    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError, double dataError) {
         this.socket = socket;
 
 		this.remoteAddress = remoteAddress;
@@ -49,6 +52,12 @@ public class SendingStateMachine extends StateMachine {
 		}
 
 		public boolean isAck() {
+			 if (ackError != 0 ) {
+				int checkIfBitError = randomWithRange(0, ackError);
+				if (checkIfBitError == 0) {
+					return (byte)0==1;
+				}
+			}
 			return packet.isAck();
 		}
     }
@@ -112,12 +121,27 @@ public class SendingStateMachine extends StateMachine {
 		return currentState == SendState.WAIT_FOR_0 || currentState == SendState.WAIT_FOR_1;
 	}
 
+	private static int randomWithRange(float min, double max){
+	   double range = (max - min) + 1;     
+	   return (int)Math.round(((Math.random() * range) + min));
+	}
+	
+	
     private byte[] makeChecksum(byte[] data) {
         byte[] check = new byte[4];
         byte[] buff = data;
         int off = 4;
         int len = data.length - 4;
-
+        
+        if (dataError != 0 ) {
+			int checkIfBitError = randomWithRange(0, dataError);
+			if (checkIfBitError == 0) {
+				data[len] = (byte)11111;
+			}
+		}
+        
+        
+        
         //xor every group of 32 bits in the data including seq
         for (int i = 0; i < len; i += 4) {
             check[0] ^= buff[off + i];

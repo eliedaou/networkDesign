@@ -31,7 +31,6 @@ public class SendManager implements Runnable {
 
         //close socket when program exits
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
             public void run() {
                 if (socket.isBound() && !socket.isClosed()) {
                     socket.close();
@@ -52,18 +51,17 @@ public class SendManager implements Runnable {
         remoteAddress = tempAddress;
         remotePort = 10000;
 
-        //start state machine
-        machine = new SendingStateMachine(socket, remoteAddress, remotePort);
-
-        //keep file input stream
-        this.fIn = fIn;
-
         //keep bit error variables
         this.ackError = ackError;
         this.dataError = dataError;
+        
+        //start state machine
+        machine = new SendingStateMachine(socket, remoteAddress, remotePort, ackError, dataError);
+
+        //keep file input stream
+        this.fIn = fIn;
     }
 
-    @Override
     public void run() {
 
         DatagramPacket dataPacket;
