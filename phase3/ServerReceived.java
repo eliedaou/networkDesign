@@ -4,26 +4,59 @@ import java.io.*;
 public class ServerReceived {
     private final boolean corrupt;
     private byte seq;
-    private byte[] checksum; 
+    private byte[] checksum;
     private DatagramPacket packet;
-    
+    private final boolean isAck;
+    private byte[] data;
+
+    public ServerReceived(byte[] data) {
+        isAck = false;
+        this.data = data;
+
+        checksum = makeChecksum();
+        System.arraycopy(checksum, 0, data, 0, 4);
+    }
+
+    public getData() {
+        return data;
+    }
+
+    private byte[] makeChecksum() {
+        byte[] check = new byte[4];
+        byte[] buff = data;
+        int off = 4;
+        int len = data.length - 4;
+
+        //xor every group of 32 bits in the data including seq
+        for (int i = 0; i < len; i += 4) {
+            check[0] ^= buff[off + i];
+            if (i + 1 < len) check[1] ^= buff[off + i + 1];
+            if (i + 2 < len) check[2] ^= buff[off + i + 2];
+            if (i + 3 < len) check[3] ^= buff[off + i + 3];
+        }
+
+        return check;
+    }
+
     public ServerReceived(DatagramPacket packet) {
         this.packet = packet;
         /*
-         * 
+         *
          *Packet should be in the form of |checksum|seqNum|
-         *in that order, each at 8 bits, therefore, 
-         *the first 8 bits are for checksum, 
-         *the next 8 bits are for sequence number 
+         *in that order, each at 8 bits, therefore,
+         *the first 8 bits are for checksum,
+         *the next 8 bits are for sequence number
          *
          */
-        
-        System.arraycopy(packet.getData(), packet.getOffset() , checksum, 0, 1);
-        
-        System.arraycopy(packet.getData(), packet.getOffset() + 1, seq, 0, 1);
-        
+
+        seq = packet.getData()[packet.getOffset() + 1];
+        checksum = new byte[1];
+        checksum[0] = seq;
+
         //check for corruption between checksum and data
         corrupt = checkCorrupt(packet, checksum);
+
+        isAck = true;
     }
 
     public byte getSeq() {
@@ -38,25 +71,6 @@ public class ServerReceived {
         byte[] buff = packet.getData();
         int off = packet.getOffset();
 
-        return checksum[0] == buff[off/* -1 */ ];
+        return checksum[0] != buff[off];
     }
-}
-
-class Request {
-	private final InetSocketAddress source;
-	private final byte[] contents;
-
-	public Request(InetSocketAddress source, byte[] contents) {
-		this.source = source;
-		this.contents = contents;
-	}
-
-	public InetSocketAddress getSource() {
-		return source;
-	}
-
-	public byte[] getContents() {
-		return contents;
-	}
-
 }

@@ -13,26 +13,26 @@ public class SendingStateMachine extends StateMachine {
 	ServerReceived incomingPacket;
 	private DatagramSocket socket;
 	private Sender serverProcess = new Sender();
-	
+
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
     }
-	
+
 	SendState sState;
-    
+
 	public SendingStateMachine(SendState stateOfServer) {
         this.sState = stateOfServer;
     }
-    
+
     public void SendingEvent(ServerReceived packet){
         this.incomingPacket = packet;
     }
-    
+
     public SendingStateMachine(DatagramSocket socket) {
         this.socket = socket;
     }
-    
-    public class SendingEvent implements Event {
+
+    public static class SendingEvent implements Event {
         private ServerReceived packet;
 
         public SendingEvent(ServerReceived packet){
@@ -46,17 +46,25 @@ public class SendingStateMachine extends StateMachine {
         public int getSeq() {
             return packet.getSeq();
         }
+
+		public int getData() {
+			return packet.getData();
+		}
+
+		public boolean isAck() {
+			return packet.isAck();
+		}
     }
- 
+
     protected State delta(State currentState, Event event) {
         return delta((SendState) currentState, (SendingEvent) event);
-        
+
     }
 
 	protected SendState delta(SendState currentState, SendingEvent event) {
-		
+
 		makePackets(Sender.fileToSend);
-		
+
 		switch (currentState) {
 		case SEND_0:
 			sendPacket(0, Sender.sourceSocket);
@@ -87,14 +95,14 @@ public class SendingStateMachine extends StateMachine {
 			return SendState.SEND_0;
 		}
 	}
-	
+
 
     protected State initialState() {
         return SendState.SEND_0;
     }
 
     private void makePackets(byte[] contents){
-    	
+
     	for (int i = 0; i * (1500) < contents.length; i++) {
 			int length = 1500;
 			if ((i + 1) * length >= contents.length) {
@@ -104,10 +112,10 @@ public class SendingStateMachine extends StateMachine {
 			packets.add(packet);
 		}
     }
-    
+
     private void sendPacket(byte seq, DatagramSocket dest) {
         byte[] header = {seq};
-        
+
         try {
             dest.send(packets.elementAt(0));
             packets.remove(0);
@@ -116,8 +124,5 @@ public class SendingStateMachine extends StateMachine {
             System.err.println("\tException: " + e);
         }
     }
-    
+
 }
-
-
-

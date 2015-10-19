@@ -6,32 +6,47 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class SendManager implements Runnable {
-    private SendingStateMachine machine = null;
-    private DatagramSocket serverSocket = null;
-    private InetSocketAddress sourceSocket = null;
-    private Request request;
+    private final SendingStateMachine machine;
+    private final DatagramSocket socket;
+    private final FileInputStream fIn;
+    private final InetSocketAddress sourceSocket;
+    private final double ackError;
+    private final double dataError;
 
-    public Request Request(){
-    	return this.request;
-    }
-
-    public InetSocketAddress sourceSocket(){
-    	return this.sourceSocket;
-    }
     public SendManager(FileInputStream fIn, double ackError, double dataError) {
         //temporary variable needed for try-catch
+        DatagramSocket tempSocket = null
         try {
             //open socket on specified port
-            socket = new DatagramSocket();
+            tempSocket = new DatagramSocket();
             System.out.println("Opened socket on port " + serverSocket.getLocalPort());
-
-            //start state machine
-            machine = new SendingStateMachine(serverSocket);
         } catch (IOException e) {
             System.err.println("Fatal: exception caugth while opening socket");
             System.err.println("\tException: " + e);
             System.exit(-1);
         }
+        socket = tempSocket;
+
+        //close socket when program exits
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (socket.isBound() && !socket.isClosed()) {
+                    socket.close();
+                    System.out.println("Closed socket");
+                }
+            }
+        }));
+
+        //start state machine
+        machine = new SendingStateMachine(socket);
+
+        //keep file input stream
+        this.fIn = fIn;
+
+        //keep bit error variables
+        this.ackError = ackError;
+        this.dataError = dataError;
     }
 
     @Override
@@ -40,14 +55,25 @@ public class SendManager implements Runnable {
         DatagramPacket dataPacket;
         ServerReceived packet;
         SendingStateMachine.SendingEvent event;
-        byte[] receivedBuffer = new byte[1500];
+        byte[] sendBuffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = fIn.read(sendBuffer, 5, 1024 - 5)) != -1) {
+            //make packet from file
+            packet = new ServerReceived(sendBuffer);
+
+            //build an event
+            event = new SendingStateMachine.SendingEvent(packet);
+
+            //give the event to the state machine
+            machine.advance(event);
+
+            //wait for ACK
+            dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
+            socket.receive(dataPacket)
+        }
         while (true) {
             //try to receive on socket until it is closed
             try {
-                //get a packet from the client
-                dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
-                serverSocket.receive(dataPacket);
-
                 request = getRequest(serverSocket);
                 sourceSocket = request.getSource();
 

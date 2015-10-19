@@ -60,10 +60,10 @@ public class ReceivedPacket {
         int off = packet.getOffset();
         int len = packet.getLength();
 
-        return checksum[0] == buff[off]
-            && checksum[1] == buff[off + 1]
-            && checksum[2] == buff[off + 2]
-            && checksum[3] == buff[off + 3];
+        return checksum[0] != buff[off]
+            || checksum[1] != buff[off + 1]
+            || checksum[2] != buff[off + 2]
+            || checksum[3] != buff[off + 3];
     }
 
     public SocketAddress getSource() {

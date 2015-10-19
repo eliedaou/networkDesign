@@ -45,7 +45,7 @@ public class ReceiveManager implements Runnable {
         DatagramPacket dPacket;
         ReceivedPacket packet;
         ReceiverStateMachine.ReceiverEvent event;
-        byte[] rcvBuffer = new byte[1100];
+        byte[] rcvBuffer = new byte[1500];
         while (true) {
             //try to receive on socket until it is closed
             try {
