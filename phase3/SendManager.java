@@ -2,41 +2,41 @@ import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class SendManager implements Runnable {
     private SendingStateMachine machine = null;
-    private DatagramSocket serverSocket = null; 
+    private DatagramSocket serverSocket = null;
     private InetSocketAddress sourceSocket = null;
     private Request request;
 
     public Request Request(){
     	return this.request;
     }
-    
+
     public InetSocketAddress sourceSocket(){
     	return this.sourceSocket;
     }
-    public SendManager(int portNumber) {
+    public SendManager(FileInputStream fIn) {
         //temporary variable needed for try-catch
         try {
             //open socket on specified port
-            serverSocket = new DatagramSocket(portNumber);
+            socket = new DatagramSocket();
             System.out.println("Opened socket on port " + serverSocket.getLocalPort());
-            
+
             //start state machine
             machine = new SendingStateMachine(serverSocket);
         } catch (IOException e) {
             System.err.println("Fatal: exception caugth while opening socket");
             System.err.println("\tException: " + e);
             System.exit(-1);
-        }  
+        }
     }
-    
+
     @Override
     public void run() {
-    	
+
         DatagramPacket dataPacket;
         ServerReceived packet;
         SendingStateMachine.SendingEvent event;
@@ -47,17 +47,17 @@ public class SendManager implements Runnable {
                 //get a packet from the client
                 dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
                 serverSocket.receive(dataPacket);
-                
+
                 request = getRequest(serverSocket);
                 sourceSocket = request.getSource();
-                
+
                 //build an event
                 packet = new ServerReceived(dataPacket);
                 event = new SendingStateMachine.SendingEvent(packet);
 
                 //break if last packet
                 if (!packet.isCorrupt() && (packet.getSeq() == -1)) break;
-                
+
                 //give the event to the state machine
                 machine.advance(event);
             } catch (IOException e) {
@@ -66,7 +66,7 @@ public class SendManager implements Runnable {
             }
         }
     }
-    
+
     private Request getRequest(DatagramSocket socket) throws SocketException,IOException {
  		// Get buffer size
  		final int DGRAM_SIZE = 1024;
@@ -87,5 +87,5 @@ public class SendManager implements Runnable {
 
  		return request;
  	}
-    
+
 }

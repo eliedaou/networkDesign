@@ -1,5 +1,5 @@
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 import java.io.IOException;
@@ -10,22 +10,45 @@ public class Sender {
 	public static byte [] fileToSend = null;
 	public static InetSocketAddress sourceSocket = null;
     public static void main(String [] args) {
-    	String contents = null;
-    	SendManager startSender = new SendManager(10000);
-    	startSender.run();
-    	
+		//get a file name
+		System.out.println("Enter a file to read from:")
+		Scanner scan = new Scanner(System.in);
+		String path = null
+		try{
+			path = scan.nextline();
+		} catch (Exception e) {
+            System.err.println("Fatal: exception caught while prompting for file name");
+            System.err.println("\tException: " + e);
+            System.exit(-1);
+		}
+
+		//open the file for reading
+		File file = new File(path);
+		final FileInputStream fIn;
+		FileInputStream tempFIn = null;
 		try {
-			contents = new String(startSender.Request().getContents(), "UTF-8");
-			sourceSocket = startSender.Request().getSource();
-		} catch (UnsupportedEncodingException e) {
-			System.err.println("Fatal: unsupported string encoding");
-			System.err.println("Exception: " + e);
-			System.exit(-2);
-		}
-		
-		if (contents.startsWith("SEND")) {
-			String path = contents.substring(4).trim();
-			fileToSend = path.getBytes();
-		}
+			tempFIn = new FileInputStream(file);
+		} catch (IOException e) {
+            System.err.println("Fatal: exception caught while trying to open file");
+            System.err.println("\tException: " + e);
+            System.exit(-1);
+        }
+		fIn = tempFIn;
+
+        //make sure file closes when program exits
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fIn.close();
+                } catch (IOException e) {
+                    System.err.println("Error: exception caught while trying to close file");
+                    System.err.println("\tException: " + e);
+                }
+            }
+        }));
+
+		//run SendManager
+    	(new SendManager(fIn)).run();
     }
 }
