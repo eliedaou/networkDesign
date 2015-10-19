@@ -4,6 +4,9 @@ public abstract class StateMachine {
 
 
     private State currentState;
+    public State CurrentState(){
+    	return currentState;
+    }
     protected abstract State initialState();
 
     public StateMachine() {

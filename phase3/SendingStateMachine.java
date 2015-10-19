@@ -47,7 +47,7 @@ public class SendingStateMachine extends StateMachine {
             return packet.getSeq();
         }
 
-		public int getData() {
+		public byte[] getData() {
 			return packet.getData();
 		}
 
@@ -146,8 +146,8 @@ public class SendingStateMachine extends StateMachine {
         }
     }
 
-	public isWaitingForAck() {
-		return currentState == SendState.WAIT_FOR_0 || currentState == SendState.WAIT_FOR_1;
+	public boolean isWaitingForAck() {
+		return CurrentState() == SendState.WAIT_FOR_0 || CurrentState() == SendState.WAIT_FOR_1;
 	}
 
 }

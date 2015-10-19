@@ -2,7 +2,7 @@ import java.net.*;
 import java.io.*;
 
 public class ServerReceived {
-    private final boolean corrupt;
+    private boolean corrupt;
     private byte seq;
     private byte[] checksum;
     private DatagramPacket packet;
@@ -22,7 +22,7 @@ public class ServerReceived {
         this.port = port;
     }
 
-    public getData() {
+    public byte[] getData() {
         return data;
     }
 

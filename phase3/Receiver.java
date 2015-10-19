@@ -34,7 +34,6 @@ public class Receiver {
 
         //make sure file closes when program exits
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
             public void run() {
                 try {
                     fOut.close();

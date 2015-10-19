@@ -59,7 +59,6 @@ public class Sender {
 
         //make sure file closes when program exits
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
             public void run() {
                 try {
                     fIn.close();
