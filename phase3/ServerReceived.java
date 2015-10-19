@@ -8,13 +8,18 @@ public class ServerReceived {
     private DatagramPacket packet;
     private final boolean isAck;
     private byte[] data;
+    private int port;
+    private InetAddress address;
 
-    public ServerReceived(byte[] data) {
+    public ServerReceived(byte[] data, InetAddress address, int port) {
         isAck = false;
         this.data = data;
 
         checksum = makeChecksum();
         System.arraycopy(checksum, 0, data, 0, 4);
+
+        this.address = address;
+        this.port = port;
     }
 
     public getData() {

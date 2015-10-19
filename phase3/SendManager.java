@@ -1,6 +1,6 @@
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,7 +9,8 @@ public class SendManager implements Runnable {
     private final SendingStateMachine machine;
     private final DatagramSocket socket;
     private final FileInputStream fIn;
-    private final InetSocketAddress sourceSocket;
+    private final InetAddress remoteAddress;
+    private final int remotePort;
     private final double ackError;
     private final double dataError;
 
@@ -47,6 +48,10 @@ public class SendManager implements Runnable {
         //keep bit error variables
         this.ackError = ackError;
         this.dataError = dataError;
+
+        //set remoteAddress
+        remoteAddress = InetAddress.getByName("127.0.0.1");
+        remotePort = 10000;
     }
 
     @Override
@@ -56,10 +61,15 @@ public class SendManager implements Runnable {
         ServerReceived packet;
         SendingStateMachine.SendingEvent event;
         byte[] sendBuffer = new byte[1024];
+        byte[] data;
         int bytesRead;
-        while ((bytesRead = fIn.read(sendBuffer, 5, 1024 - 5)) != -1) {
+        while ((bytesRead = fIn.read(sendBuffer, 5, sendBuffer.length - 5)) != -1) {
+            //make data array of correct size
+            data = new byte[bytesRead + 5];
+            System.arraycopy(sendBuffer, 0, data, 0, data.length)
+
             //make packet from file
-            packet = new ServerReceived(sendBuffer);
+            packet = new ServerReceived(data, remoteAddress, remotePort);
 
             //build an event
             event = new SendingStateMachine.SendingEvent(packet);
@@ -68,50 +78,28 @@ public class SendManager implements Runnable {
             machine.advance(event);
 
             //wait for ACK
-            dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
-            socket.receive(dataPacket)
-        }
-        while (true) {
-            //try to receive on socket until it is closed
-            try {
-                request = getRequest(serverSocket);
-                sourceSocket = request.getSource();
+            while (machine.isWaitingForAck()) {
+                //get ack from network
+                dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
+                socket.receive(dataPacket);
 
-                //build an event
+                //build event
                 packet = new ServerReceived(dataPacket);
                 event = new SendingStateMachine.SendingEvent(packet);
 
-                //break if last packet
-                if (!packet.isCorrupt() && (packet.getSeq() == -1)) break;
-
-                //give the event to the state machine
+                //give event to the state machine
                 machine.advance(event);
-            } catch (IOException e) {
-                System.err.println("Error: caught exception during main loop");
-                System.err.println("\tException: " + e);
             }
         }
+
+        //send final packet 100 times for safety
+        data = new byte[5];
+        data[0] = -1;
+        data[4] = -1;
+
+        for (int i = 0; i < 100; ++i) {
+            dataPacket = new DatagramPacket(data, data.length, remoteAddress, remotePort);
+            socket.send(dataPacket);
+        }
     }
-
-    private Request getRequest(DatagramSocket socket) throws SocketException,IOException {
- 		// Get buffer size
- 		final int DGRAM_SIZE = 1024;
-
- 		// Make packet
- 		byte[] buffer = new byte[DGRAM_SIZE];
- 		DatagramPacket packet = new DatagramPacket(buffer, DGRAM_SIZE);
-
- 		// receive into packet
- 		// blocks until received
- 		socket.receive(packet);
-
- 		// build Request
- 		byte[] contents = new byte[packet.getLength()];
- 		System.arraycopy(buffer, packet.getOffset(), contents, 0,
- 				packet.getLength());
- 		Request request = new Request((InetSocketAddress) packet.getSocketAddress(), contents);
-
- 		return request;
- 	}
-
 }
