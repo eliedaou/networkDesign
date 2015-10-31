@@ -5,6 +5,8 @@ import java.net.SocketException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SendManager implements Runnable {
     private final SendingStateMachine machine;
@@ -12,6 +14,7 @@ public class SendManager implements Runnable {
     private final FileInputStream fIn;
     private final InetAddress remoteAddress;
     private final int remotePort;
+    private Timer timer;
     private final double ackError;
     private final double dataError;
 
@@ -62,8 +65,48 @@ public class SendManager implements Runnable {
         this.fIn = fIn;
     }
 
-    public void run() {
+    class RemindTask extends TimerTask {
+    	DatagramPacket dataPacket;
+        ServerReceived packet;
+        SendingStateMachine.SendingEvent event;
+        byte[] receivedBuffer = new byte[1500];
+        
+        
+    	public RemindTask(byte[] receivedBuffer, SendingStateMachine.SendingEvent event) {
+        	this.receivedBuffer = receivedBuffer;
+        	this.event = event;
+        	
+		}
+    	
+    	public void run() {
+        	//wait for ACK
+            while (machine.isWaitingForAck()) {
 
+            	//get ack from network
+                dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
+                try {
+					socket.receive(dataPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+                //build event
+                packet = new ServerReceived(dataPacket);
+                event = new SendingStateMachine.SendingEvent(packet);
+
+                //give event to the state machine
+                machine.advance(event);
+            }
+            timer.cancel(); //Terminate the timer thread
+        }
+    }
+
+    public void Reminder(int seconds, byte[] receivedBuffer, SendingStateMachine.SendingEvent event) {
+       	timer = new Timer();
+        timer.schedule(new RemindTask(receivedBuffer, event), seconds);
+	}
+    
+    public void run() {
         DatagramPacket dataPacket;
         ServerReceived packet;
         SendingStateMachine.SendingEvent event;
@@ -87,19 +130,9 @@ public class SendManager implements Runnable {
                 //give the event to the state machine
                 machine.advance(event);
 
-                //wait for ACK
-                while (machine.isWaitingForAck()) {
-                    //get ack from network
-                    dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
-                    socket.receive(dataPacket);
+                // Timer, first digit is milliseconds
+                Reminder(5, receivedBuffer, event);
 
-                    //build event
-                    packet = new ServerReceived(dataPacket);
-                    event = new SendingStateMachine.SendingEvent(packet);
-
-                    //give event to the state machine
-                    machine.advance(event);
-                }
                 total += bytesRead;
                 //System.out.println(total + "bytes sent");
             }
