@@ -3,14 +3,7 @@ public abstract class StateMachine {
     protected interface Event {}
 
 
-<<<<<<< HEAD
-    private State currentState;
-    public State CurrentState(){
-    	return currentState;
-    }
-=======
     protected State currentState;
->>>>>>> SendingStateMachine
     protected abstract State initialState();
 
     public StateMachine() {
