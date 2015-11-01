@@ -136,7 +136,7 @@ public class SendManager implements Runnable {
 			// get ack from network
 			dataPacket = new DatagramPacket(receivedBuffer,
 					receivedBuffer.length);
-			socket.setSoTimeout(500);
+			socket.setSoTimeout(5000);
 			socket.receive(dataPacket);
 
 			if (dataPacket != null) {
