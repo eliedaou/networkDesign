@@ -11,6 +11,7 @@ public class SendingStateMachine extends StateMachine {
 	private SendingEvent prevEvent;
     private static double ackError;
     private static double dataError;
+	private static double dataLoss;
 
     
     public SendingEvent PreviousEvent(){
@@ -23,10 +24,11 @@ public class SendingStateMachine extends StateMachine {
 
 	SendState sState;
 
-    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError, double dataError) {
+    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError, double dataError, double dataLoss) {
         this.socket = socket;
         this.ackError = ackError;
         this.dataError = dataError;
+	    this.dataLoss = dataLoss;
 		this.remoteAddress = remoteAddress;
 		this.remotePort = remotePort;
 
@@ -116,7 +118,7 @@ public class SendingStateMachine extends StateMachine {
 
 		DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress, remotePort);
 		try {
-			socket.send(packet);
+			if (Math.random() > dataLoss) socket.send(packet);
 		} catch (IOException e) {
 			System.err.println("Fatal: exception caugth while sending data packet");
 			System.err.println("\tException: " + e);

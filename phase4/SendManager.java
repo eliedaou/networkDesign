@@ -18,8 +18,10 @@ public class SendManager implements Runnable {
 	private final int remotePort;
 	private final double ackError;
 	private final double dataError;
+	private final double ackLoss;
+	private final double dataLoss;
 
-	public SendManager(FileInputStream fIn, double ackError, double dataError) {
+	public SendManager(FileInputStream fIn, double ackError, double dataError, double ackLoss, double dataLoss) {
 		// temporary variable needed for try-catch
 		DatagramSocket tempSocket = null;
 		try {
@@ -60,10 +62,12 @@ public class SendManager implements Runnable {
 		// keep bit error variables
 		this.ackError = ackError;
 		this.dataError = dataError;
+		this.ackLoss = ackLoss;
+		this.dataLoss = dataLoss;
 
 		// start state machine
 		machine = new SendingStateMachine(socket, remoteAddress, remotePort,
-				ackError, dataError);
+				ackError, dataError, dataLoss);
 
 		// keep file input stream
 		this.fIn = fIn;
@@ -100,6 +104,7 @@ public class SendManager implements Runnable {
 						waitForAck(machine, 500);
 						break;
 					} catch (TimeoutException e) { //send again on timeout
+						System.err.println("TIMEOUT!");
 						machine.advance(event);
 					}
 				}
@@ -181,7 +186,7 @@ public class SendManager implements Runnable {
 					SendingStateMachine.SendingEvent event = new SendingStateMachine.SendingEvent(packet);
 
 					// give event to state machine
-					machine.advance(event);
+					if (Math.random() > ackLoss) machine.advance(event);
 
 					//return if event was positive ACK
 					if (!machine.isWaitingForAck()) {
