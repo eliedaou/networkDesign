@@ -34,7 +34,7 @@ public class Sender {
 		double errorRatio = 0;
 		try{
 			bitLoss = scan.nextInt();
-			if (bitLoss == 2 || bitLoss == 3) {
+			if (bitLoss >= 2 && bitLoss <= 5) {
 				System.out.println("Enter desired ratio of error or loss, between 0 and 1:");
 				errorRatio = scan.nextDouble();
 			}
