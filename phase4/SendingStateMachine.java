@@ -75,6 +75,7 @@ public class SendingStateMachine extends StateMachine {
 				return SendState.WAIT_FOR_0;
 			case WAIT_FOR_0:
 				if (event.isCorrupt() || (event.getSeq() != 0)) {
+					sendPacket(event, (byte) 0);
 					return SendState.WAIT_FOR_0;
 				} else {
 					return SendState.SEND_1;
@@ -85,6 +86,7 @@ public class SendingStateMachine extends StateMachine {
 				return SendState.WAIT_FOR_1;
 			case WAIT_FOR_1:
 				if (event.isCorrupt() || (event.getSeq() != 1)) {
+					sendPacket(event, (byte) 1);
 					return SendState.WAIT_FOR_1;
 				} else {
 					return SendState.SEND_0;

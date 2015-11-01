@@ -91,7 +91,12 @@ public class SendManager implements Runnable {
 				machine.advance(event);
 
 				// wait for ACK
-				WaitForAck();
+				try {
+					WaitForAck();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 				total += bytesRead;
 				// System.out.println(total + "bytes sent");
@@ -121,38 +126,61 @@ public class SendManager implements Runnable {
 		}
 	}
 
-	public void WaitForAck() throws IOException {
+	@SuppressWarnings("deprecation")
+	public void WaitForAck() throws IOException, InterruptedException {
 
-		DatagramPacket dataPacket = null;
+		DatagramPacket dataPacket;
 		ServerReceived packet;
 
 		SendingStateMachine.SendingEvent event;
-		byte[] sendBuffer = new byte[1024];
-		byte[] receivedBuffer = new byte[1500];
-		long startTime = System.currentTimeMillis();
-		long endTime = startTime + 500L;
 
-		while (machine.isWaitingForAck() && (System.currentTimeMillis() < endTime)) {
-			// get ack from network
-			dataPacket = new DatagramPacket(receivedBuffer,
+		while (machine.isWaitingForAck()) {
+			socketReceiver sR = new socketReceiver();
+			Thread t = new Thread(sR);
+			t.start();
+			long startTime = System.currentTimeMillis();
+			long endTime = startTime + 5000L;
+			while (System.currentTimeMillis() < endTime
+					|| sR.returnEvent() != null) {
+				t.stop();
+				if (machine.currentState == SendingStateMachine.SendState.WAIT_FOR_0) {
+					machine.sendPacket(sR.returnEvent(), (byte) 0);
+				} else if (machine.currentState == SendingStateMachine.SendState.WAIT_FOR_1) {
+					machine.sendPacket(sR.returnEvent(), (byte) 1);
+				}
+			}
+		}
+	}
+
+	class socketReceiver implements Runnable {
+		private volatile SendingStateMachine.SendingEvent event;
+
+		public SendingStateMachine.SendingEvent returnEvent() {
+			return this.event;
+		}
+
+		public void run() {
+			byte[] sendBuffer = new byte[1024];
+			byte[] receivedBuffer = new byte[1500];
+			DatagramPacket dataPacket = new DatagramPacket(receivedBuffer,
 					receivedBuffer.length);
-			socket.setSoTimeout(5000);
-			socket.receive(dataPacket);
-
-			if (dataPacket != null) {
+			;
+			ServerReceived packet;
+			try {
+				// get ack from network
+				socket.receive(dataPacket);
 				// build event
 				packet = new ServerReceived(dataPacket);
 				event = new SendingStateMachine.SendingEvent(packet);
-				
+
 				// give event to the state machine
 				machine.advance(event);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		}
-		if (machine.isWaitingForAck() && (machine.CurrentState() == SendingStateMachine.SendState.WAIT_FOR_0)) {
-			machine.sendPacket(machine.PreviousEvent(), (byte) 0);
-		}
-		else if (machine.isWaitingForAck() && (machine.CurrentState() == SendingStateMachine.SendState.WAIT_FOR_1)) {
-			machine.sendPacket(machine.PreviousEvent(), (byte) 1);
+			// TODO Auto-generated method stub
+
 		}
 	}
 
