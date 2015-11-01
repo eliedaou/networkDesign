@@ -1,10 +1,7 @@
 import java.lang.Void;
-import java.net.DatagramSocket;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
+import java.net.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.concurrent.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -107,9 +104,8 @@ public class SendManager implements Runnable {
 					}
 				}
 
-
 				total += bytesRead;
-				// System.out.println(total + "bytes sent");
+				System.out.println(total + "bytes sent");
 			}
 		} catch (IOException e) {
 			System.err.println("Fatal: exception caugth while reading file");
@@ -166,7 +162,20 @@ public class SendManager implements Runnable {
 				ServerReceived packet;
 				try {
 					// get ack from network
-					socket.receive(dataPacket);
+					socket.setSoTimeout(1);
+					while (true) {
+						try {
+							socket.receive(dataPacket);
+							break;
+						} catch (SocketTimeoutException e) {
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException excep) {
+								return null;
+							}
+						}
+					}
+
 					// build event
 					packet = new ServerReceived(dataPacket);
 					SendingStateMachine.SendingEvent event = new SendingStateMachine.SendingEvent(packet);

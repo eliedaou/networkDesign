@@ -70,7 +70,7 @@ public class ReceiverStateMachine extends StateMachine {
                     return ReceiverState.WAIT_FOR_1;
                 } else if (event.isCorrupt() || (event.getSeq() != 0)) {
                     //send ACK 1
-                    if (onceThrough || !onceThrough) sendAck((byte) 1, event.getSource());
+                    if (onceThrough) sendAck((byte) 1, event.getSource());
 
                     //stay in WAIT_FOR_0
                     return ReceiverState.WAIT_FOR_0;
