@@ -1,3 +1,7 @@
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
+import java.lang.Boolean;
+import java.lang.Void;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -5,6 +9,13 @@ import java.net.SocketException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class SendManager implements Runnable {
 	private final SendingStateMachine machine;
@@ -91,12 +102,15 @@ public class SendManager implements Runnable {
 				machine.advance(event);
 
 				// wait for ACK
-				try {
-					WaitForAck();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				while (true) {
+					try {
+						waitForAck(machine, 500);
+						break;
+					} catch (TimeoutException e) { //send again on timeout
+						machine.advance(event);
+					}
 				}
+
 
 				total += bytesRead;
 				// System.out.println(total + "bytes sent");
@@ -118,69 +132,63 @@ public class SendManager implements Runnable {
 			try {
 				socket.send(dataPacket);
 			} catch (IOException e) {
-				System.err
-						.println("Fatal: exception caugth while sending final packet");
+				System.err.println("Fatal: exception caugth while sending final packet");
 				System.err.println("\tException: " + e);
 				System.exit(-1);
 			}
 		}
 	}
 
-	@SuppressWarnings("deprecation")
-	public void WaitForAck() throws IOException, InterruptedException {
-
+	private void waitForAck(SendingStateMachine machine, int timeout) throws TimeoutException {
 		DatagramPacket dataPacket;
 		ServerReceived packet;
 
-		SendingStateMachine.SendingEvent event;
+		socketReceiver sR = new socketReceiver();
+		ExecutorService exec = Executors.newSingleThreadExecutor();
 
-		while (machine.isWaitingForAck()) {
-			socketReceiver sR = new socketReceiver();
-			Thread t = new Thread(sR);
-			t.start();
-			long startTime = System.currentTimeMillis();
-			long endTime = startTime + 5000L;
-			while (System.currentTimeMillis() < endTime
-					|| sR.returnEvent() != null) {
-				t.stop();
-				if (machine.currentState == SendingStateMachine.SendState.WAIT_FOR_0) {
-					machine.sendPacket(sR.returnEvent(), (byte) 0);
-				} else if (machine.currentState == SendingStateMachine.SendState.WAIT_FOR_1) {
-					machine.sendPacket(sR.returnEvent(), (byte) 1);
-				}
-			}
+		final Future<Void> eventFuture = exec.submit(sR);
+
+		//can throw timeout exception
+		try {
+			eventFuture.get(timeout, TimeUnit.MILLISECONDS);
+		} catch (ExecutionException e) {
+			System.err.println("Fatal: exception caught while waiting for ACK");
+			System.err.println("\tException: " + e);
+			System.exit(-1);
+		} catch (InterruptedException e) {
+			System.err.println("Fatal: exception caught while waiting for ACK");
+			System.err.println("\tException: " + e);
+			System.exit(-1);
 		}
 	}
 
-	class socketReceiver implements Runnable {
-		private volatile SendingStateMachine.SendingEvent event;
+	private class socketReceiver implements Callable<Void> {
+		public Void call() {
+			//keep looping until an non-corrupt event is received
+			while (true) {
+				byte[] sendBuffer = new byte[1024];
+				byte[] receivedBuffer = new byte[1500];
+				DatagramPacket dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
+				ServerReceived packet;
+				try {
+					// get ack from network
+					socket.receive(dataPacket);
+					// build event
+					packet = new ServerReceived(dataPacket);
+					SendingStateMachine.SendingEvent event = new SendingStateMachine.SendingEvent(packet);
 
-		public SendingStateMachine.SendingEvent returnEvent() {
-			return this.event;
-		}
+					// give event to state machine
+					machine.advance(event);
 
-		public void run() {
-			byte[] sendBuffer = new byte[1024];
-			byte[] receivedBuffer = new byte[1500];
-			DatagramPacket dataPacket = new DatagramPacket(receivedBuffer,
-					receivedBuffer.length);
-			;
-			ServerReceived packet;
-			try {
-				// get ack from network
-				socket.receive(dataPacket);
-				// build event
-				packet = new ServerReceived(dataPacket);
-				event = new SendingStateMachine.SendingEvent(packet);
+					//return if event was positive ACK
+					if (!machine.isWaitingForAck()) {
+						return null;
+					}
 
-				// give event to the state machine
-				machine.advance(event);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			// TODO Auto-generated method stub
-
 		}
 	}
 

@@ -3,6 +3,7 @@ import java.net.DatagramPacket;
 import java.net.SocketAddress;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.net.SocketException;
 
 public class ReceiverStateMachine extends StateMachine {
     private boolean onceThrough;
@@ -112,7 +113,14 @@ public class ReceiverStateMachine extends StateMachine {
 
     private void sendAck(byte seq, SocketAddress dest) {
         byte[] header = {seq, seq};
-        DatagramPacket packet = new DatagramPacket(header, header.length, dest);
+        DatagramPacket packet = null;
+        try {
+            packet = new DatagramPacket(header, header.length, dest);
+        } catch (SocketException e) {
+            System.err.println("Fatal: caught exception while sending ACK");
+            System.err.println("\tException: " + e);
+            System.exit(-1);
+        }
 
         try {
             socket.send(packet);
