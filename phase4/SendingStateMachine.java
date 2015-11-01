@@ -12,6 +12,11 @@ public class SendingStateMachine extends StateMachine {
     private static double ackError;
     private static double dataError;
 
+    
+    public SendingEvent PreviousEvent(){
+    	return prevEvent;
+    }
+    
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
     }
@@ -70,7 +75,6 @@ public class SendingStateMachine extends StateMachine {
 				return SendState.WAIT_FOR_0;
 			case WAIT_FOR_0:
 				if (event.isCorrupt() || (event.getSeq() != 0)) {
-					sendPacket(prevEvent, (byte) 0);
 					return SendState.WAIT_FOR_0;
 				} else {
 					return SendState.SEND_1;
@@ -81,7 +85,6 @@ public class SendingStateMachine extends StateMachine {
 				return SendState.WAIT_FOR_1;
 			case WAIT_FOR_1:
 				if (event.isCorrupt() || (event.getSeq() != 1)) {
-					sendPacket(prevEvent, (byte) 1);
 					return SendState.WAIT_FOR_1;
 				} else {
 					return SendState.SEND_0;
@@ -94,7 +97,7 @@ public class SendingStateMachine extends StateMachine {
         return SendState.SEND_0;
     }
 
-    private void sendPacket(SendingEvent event, byte seq) {
+     void sendPacket(SendingEvent event, byte seq) {
 		byte[] data = event.getData();
 		data[4] = seq;
 

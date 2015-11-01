@@ -147,7 +147,12 @@ public class SendManager implements Runnable {
 				// give event to the state machine
 				machine.advance(event);
 			}
-			
+		}
+		if (machine.isWaitingForAck() && (machine.CurrentState() == SendingStateMachine.SendState.WAIT_FOR_0)) {
+			machine.sendPacket(machine.PreviousEvent(), (byte) 0);
+		}
+		else if (machine.isWaitingForAck() && (machine.CurrentState() == SendingStateMachine.SendState.WAIT_FOR_1)) {
+			machine.sendPacket(machine.PreviousEvent(), (byte) 1);
 		}
 	}
 
