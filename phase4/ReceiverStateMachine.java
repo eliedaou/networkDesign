@@ -116,6 +116,10 @@ public class ReceiverStateMachine extends StateMachine {
         DatagramPacket packet = null;
         try {
             packet = new DatagramPacket(header, header.length, dest);
+            if (false) {
+                // Java 7 DatagramPackets can throw a SocketException, but Java 8 DatagramPackets do not
+                throw new SocketException();
+            }
         } catch (SocketException e) {
             System.err.println("Fatal: caught exception while sending ACK");
             System.err.println("\tException: " + e);

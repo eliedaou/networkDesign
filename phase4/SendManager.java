@@ -1,11 +1,7 @@
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import java.lang.Boolean;
 import java.lang.Void;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -151,14 +147,12 @@ public class SendManager implements Runnable {
 		//can throw timeout exception
 		try {
 			eventFuture.get(timeout, TimeUnit.MILLISECONDS);
-		} catch (ExecutionException e) {
+		} catch (ExecutionException | InterruptedException e) {
 			System.err.println("Fatal: exception caught while waiting for ACK");
 			System.err.println("\tException: " + e);
 			System.exit(-1);
-		} catch (InterruptedException e) {
-			System.err.println("Fatal: exception caught while waiting for ACK");
-			System.err.println("\tException: " + e);
-			System.exit(-1);
+		} finally {
+			exec.shutdownNow();
 		}
 	}
 
