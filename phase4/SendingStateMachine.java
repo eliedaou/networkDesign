@@ -11,17 +11,24 @@ public class SendingStateMachine extends StateMachine {
 	private SendingEvent prevEvent;
     private static double ackError;
     private static double dataError;
+	private static double dataLoss;
 
+    
+    public SendingEvent PreviousEvent(){
+    	return prevEvent;
+    }
+    
 	protected enum SendState implements State {
         SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
     }
 
 	SendState sState;
 
-    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError, double dataError) {
+    public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError, double dataError, double dataLoss) {
         this.socket = socket;
         this.ackError = ackError;
         this.dataError = dataError;
+	    this.dataLoss = dataLoss;
 		this.remoteAddress = remoteAddress;
 		this.remotePort = remotePort;
 
@@ -69,10 +76,14 @@ public class SendingStateMachine extends StateMachine {
 				prevEvent = event;
 				return SendState.WAIT_FOR_0;
 			case WAIT_FOR_0:
-				if (event.isCorrupt() || (event.getSeq() != 0)) {
+				if (!event.isAck()) { //timeout, resend
 					sendPacket(prevEvent, (byte) 0);
 					return SendState.WAIT_FOR_0;
+				} else if (event.isCorrupt() || (event.getSeq() != 0)) {
+					//no op
+					return SendState.WAIT_FOR_0;
 				} else {
+					//time is implicitly stopped
 					return SendState.SEND_1;
 				}
 			case SEND_1:
@@ -80,10 +91,14 @@ public class SendingStateMachine extends StateMachine {
 				prevEvent = event;
 				return SendState.WAIT_FOR_1;
 			case WAIT_FOR_1:
-				if (event.isCorrupt() || (event.getSeq() != 1)) {
+				if (!event.isAck()) { //timeout, resend
 					sendPacket(prevEvent, (byte) 1);
 					return SendState.WAIT_FOR_1;
+				} else if (event.isCorrupt() || (event.getSeq() != 1)) {
+					//no op
+					return SendState.WAIT_FOR_1;
 				} else {
+					//timer is implicitly stopped
 					return SendState.SEND_0;
 				}
 		}
@@ -94,7 +109,7 @@ public class SendingStateMachine extends StateMachine {
         return SendState.SEND_0;
     }
 
-    private void sendPacket(SendingEvent event, byte seq) {
+     void sendPacket(SendingEvent event, byte seq) {
 		byte[] data = event.getData();
 		data[4] = seq;
 
@@ -103,7 +118,7 @@ public class SendingStateMachine extends StateMachine {
 
 		DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress, remotePort);
 		try {
-			socket.send(packet);
+			if (Math.random() > dataLoss) socket.send(packet);
 		} catch (IOException e) {
 			System.err.println("Fatal: exception caugth while sending data packet");
 			System.err.println("\tException: " + e);

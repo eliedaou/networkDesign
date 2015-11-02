@@ -6,6 +6,10 @@ public abstract class StateMachine {
     protected State currentState;
     protected abstract State initialState();
 
+    public State CurrentState(){
+    	return currentState;
+    }
+    
     public StateMachine() {
         currentState = this.initialState();
     }

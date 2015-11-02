@@ -27,13 +27,15 @@ public class Sender {
 		System.out.println("Pick a bit error simulation option:");
 		System.out.println("\t1. No errors");
 		System.out.println("\t2. ACK bit errors");
-		System.out.println("\t3. Data loss");
+		System.out.println("\t3. Data bit errors");
+	    System.out.println("\t4. ACK packet loss");
+	    System.out.println("\t5. Data packet loss");
 		int bitLoss = 1;
 		double errorRatio = 0;
 		try{
 			bitLoss = scan.nextInt();
-			if (bitLoss == 2 || bitLoss == 3) {
-				System.out.println("Enter desired ratio of error, between 0 and 1:");
+			if (bitLoss >= 2 && bitLoss <= 5) {
+				System.out.println("Enter desired ratio of error or loss, between 0 and 1:");
 				errorRatio = scan.nextDouble();
 			}
 		} catch (Exception e) {
@@ -41,7 +43,7 @@ public class Sender {
             System.err.println("\tException: " + e);
             System.exit(-1);
 		}
-		if (bitLoss < 1 || bitLoss > 3) bitLoss = 1;
+		if (bitLoss < 1 || bitLoss > 5) bitLoss = 1;
 		if (errorRatio < 0 || errorRatio > 1) errorRatio = 0;
 
 		//open the file for reading
@@ -72,13 +74,19 @@ public class Sender {
 		//run SendManager
 		switch (bitLoss) {
 			case 1:
-				(new SendManager(fIn, 0 , 0)).run();
+				(new SendManager(fIn, 0 , 0, 0, 0)).run();
 				break;
 			case 2:
-				(new SendManager(fIn, errorRatio, 0)).run();
+				(new SendManager(fIn, errorRatio, 0, 0 , 0)).run();
 				break;
 			case 3:
-				(new SendManager(fIn, 0, errorRatio)).run();
+				(new SendManager(fIn, 0, errorRatio, 0 , 0)).run();
+				break;
+			case 4:
+				(new SendManager(fIn, 0, 0, errorRatio, 0)).run();
+				break;
+			case 5:
+				(new SendManager(fIn, 0, 0, 0, errorRatio)).run();
 				break;
 		}
     }
