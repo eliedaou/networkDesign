@@ -101,7 +101,7 @@ public class SendManager implements Runnable {
 				// wait for ACK
 				while (true) {
 					try {
-						waitForAck(machine, 500);
+						waitForAck(machine, 300);
 						break;
 					} catch (TimeoutException e) { //send again on timeout
 						System.err.println("TIMEOUT!");
