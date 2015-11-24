@@ -1,10 +1,6 @@
 package daoumoyer.statemachine;
 
 public abstract class StateMachine {
-    protected interface State {}
-    protected interface Event {}
-
-
     protected State currentState;
     protected abstract State initialState();
 

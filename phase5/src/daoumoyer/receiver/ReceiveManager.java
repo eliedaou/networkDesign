@@ -6,68 +6,66 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ReceiveManager implements Runnable {
-    private final ReceiverStateMachine machine;
-    private final DatagramSocket socket;
-    private final FileOutputStream fOut;
+	private final ReceiverStateMachine machine;
+	private final DatagramSocket socket;
+	private final FileOutputStream fOut;
 
-    public ReceiveManager(FileOutputStream fOut) {
-        //temporary varaible needed for try-catch
-        DatagramSocket tempSocket = null;
-        try {
-            //open socket on port 10000
-            tempSocket = new DatagramSocket(10000);
-            System.out.println("Opened socket on port " + tempSocket.getLocalPort());
-        } catch (IOException e) {
-            System.err.println("Fatal: exception caugth while opening socket");
-            System.err.println("\tException: " + e);
-            System.exit(-1);
-        }
-        socket = tempSocket;
+	public ReceiveManager(FileOutputStream fOut) {
+		//temporary varaible needed for try-catch
+		DatagramSocket tempSocket = null;
+		try {
+			//open socket on port 10000
+			tempSocket = new DatagramSocket(10000);
+			System.out.println("Opened socket on port " + tempSocket.getLocalPort());
+		} catch (IOException e) {
+			System.err.println("Fatal: exception caugth while opening socket");
+			System.err.println("\tException: " + e);
+			System.exit(-1);
+		}
+		socket = tempSocket;
 
-        //close socket when program exits
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (socket.isBound() && !socket.isClosed()) {
-                    socket.close();
-                    System.out.println("Closed socket");
-                }
-            }
-        }));
+		//close socket when program exits
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override public void run() {
+				if (socket.isBound() && !socket.isClosed()) {
+					socket.close();
+					System.out.println("Closed socket");
+				}
+			}
+		}));
 
-        //start state machine
-        machine = new ReceiverStateMachine(socket);
+		//start state machine
+		machine = new ReceiverStateMachine(socket);
 
-        //keep file variable
-        this.fOut = fOut;
-    }
+		//keep file variable
+		this.fOut = fOut;
+	}
 
-    @Override
-    public void run() {
-        DatagramPacket dPacket;
-        ReceivedPacket packet;
-        ReceiverStateMachine.ReceiverEvent event;
-        byte[] rcvBuffer = new byte[1500];
-        while (true) {
-            //try to receive on socket until it is closed
-            try {
-                //get a packet from the network
-                dPacket = new DatagramPacket(rcvBuffer, rcvBuffer.length);
-                socket.receive(dPacket);
+	@Override public void run() {
+		DatagramPacket dPacket;
+		ReceivedPacket packet;
+		ReceiverEvent event;
+		byte[] rcvBuffer = new byte[1500];
+		while (true) {
+			//try to receive on socket until it is closed
+			try {
+				//get a packet from the network
+				dPacket = new DatagramPacket(rcvBuffer, rcvBuffer.length);
+				socket.receive(dPacket);
 
-                //build an event
-                packet = new ReceivedPacket(dPacket);
-                event = new ReceiverStateMachine.ReceiverEvent(packet, fOut);
+				//build an event
+				packet = new ReceivedPacket(dPacket);
+				event = new ReceiverEvent(packet, fOut);
 
-                //break if last packet
-                if (!packet.isCorrupt() && (packet.getSeq() == -1)) break;
+				//break if last packet
+				if (!packet.isCorrupt() && (packet.getSeq() == -1)) break;
 
-                //give the event to the state machine
-                machine.advance(event);
-            } catch (IOException e) {
-                System.err.println("Error: caught exception during main loop");
-                System.err.println("\tException: " + e);
-            }
-        }
-    }
+				//give the event to the state machine
+				machine.advance(event);
+			} catch (IOException e) {
+				System.err.println("Error: caught exception during main loop");
+				System.err.println("\tException: " + e);
+			}
+		}
+	}
 }

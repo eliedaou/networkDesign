@@ -1,2 +1,14 @@
 #compiled java classes
 *.class
+
+#IntelliJ Files
+.idea
+*.iml
+phase*/out
+
+#submittables
+phase3/Moyer.zip
+phase3/ReadMe.txt
+phase3/contributions.txt
+phase3/moyer_daou.tar
+
