@@ -79,7 +79,7 @@ public class SendManager implements Runnable {
 
 		DatagramPacket dataPacket;
 		ServerReceived packet;
-		SendingStateMachine.SendingEvent event;
+		SenderEvent event;
 		byte[] sendBuffer = new byte[1024];
 		byte[] receivedBuffer = new byte[1500];
 		byte[] data;
@@ -95,7 +95,7 @@ public class SendManager implements Runnable {
 				packet = new ServerReceived(data, remoteAddress, remotePort);
 
 				// build an event
-				event = new SendingStateMachine.SendingEvent(packet);
+				event = new SenderEvent(packet);
 
 				// give the event to the state machine
 				machine.advance(event);
@@ -185,7 +185,7 @@ public class SendManager implements Runnable {
 
 					// build event
 					packet = new ServerReceived(dataPacket);
-					SendingStateMachine.SendingEvent event = new SendingStateMachine.SendingEvent(packet);
+					SenderEvent event = new SenderEvent(packet);
 
 					// give event to state machine
 					if (Math.random() > ackLoss) machine.advance(event);
