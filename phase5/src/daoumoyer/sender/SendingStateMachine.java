@@ -1,5 +1,6 @@
 package daoumoyer.sender;
 
+import daoumoyer.sender.events.SenderEvent;
 import daoumoyer.statemachine.Event;
 import daoumoyer.statemachine.State;
 import daoumoyer.statemachine.StateMachine;

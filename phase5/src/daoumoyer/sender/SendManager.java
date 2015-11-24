@@ -1,5 +1,7 @@
 package daoumoyer.sender;
 
+import daoumoyer.sender.events.SenderEvent;
+
 import java.lang.Void;
 import java.net.*;
 import java.io.FileInputStream;

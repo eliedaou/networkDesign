@@ -1,4 +1,4 @@
-package daoumoyer.sender;
+package daoumoyer.sender.events;
 
 import daoumoyer.statemachine.Event;
 

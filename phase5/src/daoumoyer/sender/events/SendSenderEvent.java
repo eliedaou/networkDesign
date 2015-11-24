@@ -1,4 +1,6 @@
-package daoumoyer.sender;
+package daoumoyer.sender.events;
+
+import daoumoyer.sender.SendData;
 
 /**
  * @author Grant Moyer
