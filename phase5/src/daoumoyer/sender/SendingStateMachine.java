@@ -1,9 +1,7 @@
 package daoumoyer.sender;
 
-import daoumoyer.sender.events.SenderEvent;
-import daoumoyer.statemachine.Event;
-import daoumoyer.statemachine.State;
-import daoumoyer.statemachine.StateMachine;
+import daoumoyer.sender.events.*;
+import daoumoyer.statemachine.*;
 
 import java.net.*;
 import java.io.*;
@@ -38,92 +36,68 @@ public class SendingStateMachine extends StateMachine {
 		prevEvent = null;
 	}
 
-	protected State delta(State currentState, Event event) {
+	protected State delta(State currentState, Event event) throws DataRefusedException {
 		return delta((SenderState) currentState, (SenderEvent) event);
 
 	}
 
-	protected SenderState delta(SenderState currentState, SenderEvent event) {
+	protected SenderState delta(SenderState currentState, SenderEvent event) throws DataRefusedException {
 		switch (currentState) {
-			case SEND_0:
-				sendPacket(event, (byte) 0);
-				prevEvent = event;
-				return SenderState.WAIT_FOR_0;
-			case WAIT_FOR_0:
-				if (!event.isAck()) { //timeout, resend
-					sendPacket(prevEvent, (byte) 0);
-					return SenderState.WAIT_FOR_0;
-				} else if (event.isCorrupt(ackError) || (event.getSeq() != 0)) {
-					//no op
-					return SenderState.WAIT_FOR_0;
-				} else {
-					//time is implicitly stopped
-					return SenderState.SEND_1;
+			case WAIT:
+				if (event instanceof SendSenderEvent) {
+					//create variables
+					SendSenderEvent sendEvent = (SendSenderEvent) event;
+					SendData data = sendEvent.getData();
+					SendWindow window = data.getWindow();
+
+					//event logic
+					if (window.getNextSeqNum() < window.getBase() + window.getWindowSize()) {
+						data.udtSend(window.getNextSeqNum());
+						if (window.getBase() == window.getNextSeqNum()) {
+							sendEvent.getTimer().restart();
+						}
+						window.incrementNext();
+					} else {
+						throw new DataRefusedException();
+					}
+				} else if (event instanceof TimeoutSenderEvent) {
+					//create variables
+					TimeoutSenderEvent timeoutEvent = (TimeoutSenderEvent) event;
+					SendData data = timeoutEvent.getData();
+					SendWindow window = data.getWindow();
+
+					//event logic
+					timeoutEvent.getTimer().restart();
+					for (long i = window.getBase(); i < window.getNextSeqNum(); ++i) {
+						data.udtSend(i);
+					}
+				} else if (event instanceof RcvSenderEvent) {
+					RcvSenderEvent rcvEvent = (RcvSenderEvent) event;
+					if (!rcvEvent.isCorrupt()) {
+						//create variables
+						SendWindow window = rcvEvent.getWindow();
+						AckPacket ack = rcvEvent.getAck();
+						SimpleTimer timer = rcvEvent.getTimer();
+
+						//event logic
+						window.setBase(ack.getSeqNum() + 1);
+						if (window.getBase() == window.getNextSeqNum()) {
+							rcvEvent.getTimer().stop();
+						} else {
+							rcvEvent.getTimer().restart();
+						}
+					} else {
+						//event logic
+						return SenderState.WAIT;
+					}
 				}
-			case SEND_1:
-				sendPacket(event, (byte) 1);
-				prevEvent = event;
-				return SenderState.WAIT_FOR_1;
-			case WAIT_FOR_1:
-				if (!event.isAck()) { //timeout, resend
-					sendPacket(prevEvent, (byte) 1);
-					return SenderState.WAIT_FOR_1;
-				} else if (event.isCorrupt(ackError) || (event.getSeq() != 1)) {
-					//no op
-					return SenderState.WAIT_FOR_1;
-				} else {
-					//timer is implicitly stopped
-					return SenderState.SEND_0;
-				}
+			default:
+				throw new InvalidStateException(currentState);
 		}
-		return currentState;
 	}
 
 	protected State initialState() {
-		return SenderState.SEND_0;
-	}
-
-	void sendPacket(SenderEvent event, byte seq) {
-		byte[] data = event.getData();
-		data[4] = seq;
-
-		byte[] checksum = makeChecksum(data);
-		System.arraycopy(checksum, 0, data, 0, 4);
-
-		DatagramPacket packet = new DatagramPacket(data, data.length, remoteAddress, remotePort);
-		try {
-			if (Math.random() > dataLoss) socket.send(packet);
-		} catch (IOException e) {
-			System.err.println("Fatal: exception caugth while sending data packet");
-			System.err.println("\tException: " + e);
-			System.exit(-1);
-		}
-	}
-
-	public boolean isWaitingForAck() {
-		return currentState == SenderState.WAIT_FOR_0 || currentState == SenderState.WAIT_FOR_1;
-	}
-
-	private byte[] makeChecksum(byte[] data) {
-		byte[] check = new byte[4];
-		byte[] buff = data;
-		int off = 4;
-		int len = data.length - 4;
-
-		//xor every group of 32 bits in the data including seq
-		for (int i = 0; i < len; i += 4) {
-			check[0] ^= buff[off + i];
-			if (i + 1 < len) check[1] ^= buff[off + i + 1];
-			if (i + 2 < len) check[2] ^= buff[off + i + 2];
-			if (i + 3 < len) check[3] ^= buff[off + i + 3];
-		}
-
-		double checkIfBitError = Math.random();
-		if (checkIfBitError < dataError) {
-			data[4] = (byte) 4;
-		}
-
-		return check;
+		return SenderState.WAIT;
 	}
 
 }

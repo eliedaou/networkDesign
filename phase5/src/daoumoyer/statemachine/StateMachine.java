@@ -12,9 +12,9 @@ public abstract class StateMachine {
         currentState = this.initialState();
     }
 
-    protected abstract State delta(State currentState, Event event);
+    protected abstract State delta(State currentState, Event event) throws CannotAdvanceException;
 
-    public void advance(Event event) {
+    public void advance(Event event) throws CannotAdvanceException {
         currentState = this.delta(currentState, event);
     }
 }

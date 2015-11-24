@@ -11,9 +11,33 @@ public class SendWindow {
 	private long nextSeqNum;
 	private long windowSize;
 
-	public SendWindow(File file) {
+	public SendWindow() {
 		base = 0;
 		nextSeqNum = 0;
-		windowSize = 1000;
+		windowSize = 100;
+	}
+
+	/* Getters */
+
+	public long getBase() {
+		return base;
+	}
+
+	public long getNextSeqNum() {
+		return nextSeqNum;
+	}
+
+	public long getWindowSize() {
+		return windowSize;
+	}
+
+	/* Mutators */
+
+	public void incrementNext() {
+		++nextSeqNum;
+	}
+
+	public void setBase(long base) {
+		this.base = base;
 	}
 }

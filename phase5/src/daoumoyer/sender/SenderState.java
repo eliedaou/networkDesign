@@ -7,5 +7,15 @@ import daoumoyer.statemachine.State;
  * @since 2015-11-24
  */
 public enum SenderState implements State {
-	SEND_0, WAIT_FOR_0, SEND_1, WAIT_FOR_1
+	WAIT("WAIT");
+
+	private String stateName;
+
+	private SenderState(String stateName) {
+		this.stateName = stateName;
+	}
+
+	public String toString() {
+		return stateName;
+	}
 }

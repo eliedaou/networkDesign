@@ -1,6 +1,7 @@
 package daoumoyer.sender.events;
 
 import daoumoyer.sender.SendData;
+import daoumoyer.sender.SimpleTimer;
 
 /**
  * @author Grant Moyer
@@ -8,7 +9,12 @@ import daoumoyer.sender.SendData;
  */
 public class SendSenderEvent extends SenderEvent {
 	private SendData data;
-	public SendSenderEvent(SendData data) {
+	public SendSenderEvent(SimpleTimer timer, SendData data) {
+		super(timer);
 		this.data = data;
+	}
+
+	public SendData getData() {
+		return data;
 	}
 }

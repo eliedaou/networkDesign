@@ -8,12 +8,22 @@ import java.io.File;
  */
 public class SendData {
 	private File file;
+	private SendWindow window;
 
 	public SendData(File file) {
 		this.file = file;
+		window = new SendWindow();
 	}
 
 	public SendData(String path) {
-		file = new File(path);
+		this(new File(path));
+	}
+
+	public SendWindow getWindow() {
+		return window;
+	}
+
+	public void udtSend(long seqNum) {
+
 	}
 }
