@@ -115,7 +115,7 @@ public class SendWindow {
 			byte[] checksum = makeChecksum(buffer, 4);
 			System.arraycopy(checksum, 0, buffer, 0, 4);
 
-			DatagramPacket packet = new Datagram packet(buffer, buffer.length, remoteAddress, remotePort);
+			DatagramPacket packet = new DatagramPacket(buffer, buffer.length, remoteAddress, remotePort);
 		} if (seqNum >= base && seqNum < base + windowSize) {
 			DatagramPacket packet = packets.get((int) (seqNum - base));
 			if (packet != null) {

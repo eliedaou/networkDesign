@@ -15,7 +15,7 @@ public class ReceiveManager implements Runnable {
 	private final FileOutputStream fOut;
 
 	public ReceiveManager(FileOutputStream fOut) {
-		//temporary varaible needed for try-catch
+		//temporary variable needed for try-catch
 		DatagramSocket tempSocket = null;
 		try {
 			//open socket on port 10000
@@ -39,7 +39,7 @@ public class ReceiveManager implements Runnable {
 		}));
 
 		//start state machine
-		machine = new ReceiverStateMachine(socket);
+		machine = new ReceiverStateMachine(socket, socket.getInetAddress(), socket.getPort());
 
 		//keep file variable
 		this.fOut = fOut;
