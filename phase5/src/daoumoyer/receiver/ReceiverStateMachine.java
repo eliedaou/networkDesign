@@ -1,19 +1,14 @@
 package daoumoyer.receiver;
 
 import daoumoyer.receiver.event.RcvReceiverEvent;
-import daoumoyer.statemachine.Event;
-import daoumoyer.statemachine.InvalidStateException;
-import daoumoyer.statemachine.State;
-import daoumoyer.statemachine.StateMachine;
+import daoumoyer.statemachine.*;
 
-import java.net.DatagramSocket;
-import java.net.DatagramPacket;
-import java.net.SocketAddress;
+import java.net.*;
 import java.io.IOException;
-import java.net.SocketException;
 
 public class ReceiverStateMachine extends StateMachine {
-	private boolean onceThrough;
+	private long expectedSeqNum;
+	private AckToSend currentAck;
 	private DatagramSocket socket;
 
 	protected State delta(State currentState, Event event) {
@@ -23,41 +18,37 @@ public class ReceiverStateMachine extends StateMachine {
 	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) {
 		switch (currentState) {
 			case WAIT:
-				
+				//make variables
+				long seqNum = event.getSeq();
+				currentAck = new AckToSend(seqNum, (InetSocketAddress) event.getSource());
+
+				//event logic
+				if (!event.isCorrupt() && seqNum == expectedSeqNum) {
+
+				} else {
+					sendAck(currentAck);
+				}
 			default:
-				throw new InvalidStateException(currentState)
+				throw new InvalidStateException(currentState);
 		}
 	}
 
 	protected State initialState() {
-		return ReceiverState.WAIT_FOR_0;
+		return ReceiverState.WAIT;
 	}
 
 	public ReceiverStateMachine(DatagramSocket socket) {
-		onceThrough = false;
+		expectedSeqNum = 0;
 		this.socket = socket;
 	}
 
-	private void sendAck(byte seq, SocketAddress dest) {
-		byte[] header = {seq, seq};
-		DatagramPacket packet = null;
+	private void sendAck(AckToSend ack) {
 		try {
-			packet = new DatagramPacket(header, header.length, dest);
-			if (false) {
-				// Java 7 DatagramPackets can throw a SocketException, but Java 8 DatagramPackets do not
-				throw new SocketException();
-			}
-		} catch (SocketException e) {
-			System.err.println("Fatal: caught exception while sending ACK");
-			System.err.println("\tException: " + e);
-			System.exit(-1);
-		}
-
-		try {
-			socket.send(packet);
+			socket.send(ack.getPacket());
 		} catch (IOException e) {
-			System.err.println("Error: exception caught while sending ACK");
-			System.err.println("\tException: " + e);
+			System.err.println("Fatal: exception caught while sending ACK");
+			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 }

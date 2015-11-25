@@ -2,6 +2,7 @@ package daoumoyer.receiver;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
  * @author Grant Moyer
@@ -22,6 +23,10 @@ public class AckToSend {
 		}
 
 		packet = new DatagramPacket(buffer, buffer.length, senderAddress, senderPort);
+	}
+
+	public AckToSend(long seqNum, InetSocketAddress senderAddress) {
+		this(seqNum, senderAddress.getAddress(), senderAddress.getPort());
 	}
 
 	public DatagramPacket getPacket() {

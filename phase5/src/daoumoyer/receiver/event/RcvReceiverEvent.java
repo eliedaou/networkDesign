@@ -23,7 +23,7 @@ public class RcvReceiverEvent implements Event {
 		return packet.isCorrupt();
 	}
 
-	public int getSeq() {
+	public long getSeq() {
 		return packet.getSeq();
 	}
 
@@ -37,5 +37,10 @@ public class RcvReceiverEvent implements Event {
 
 	public SocketAddress getSource() {
 		return packet.getSource();
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getName();
 	}
 }

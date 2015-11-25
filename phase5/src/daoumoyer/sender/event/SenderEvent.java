@@ -7,7 +7,7 @@ import daoumoyer.statemachine.Event;
  * @author Grant Moyer
  * @since 2015-11-24
  */
-public class SenderEvent implements Event {
+public abstract class SenderEvent implements Event {
 	private SimpleTimer timer;
 
 	public SenderEvent(SimpleTimer timer) {
