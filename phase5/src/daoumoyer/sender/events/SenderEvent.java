@@ -11,7 +11,7 @@ public class SenderEvent implements Event {
 	private SimpleTimer timer;
 
 	public SenderEvent(SimpleTimer timer) {
-		this.timer =  timer;
+		this.timer = timer;
 	}
 
 	@Override

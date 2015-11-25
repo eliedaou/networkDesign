@@ -11,7 +11,8 @@ public class AckPacket {
 	private long seqNum;
 
 	public AckPacket(DatagramPacket packet) {
-
+		throw new Error("Need to implement daoumoyer.sender.AckPacket.AckPacket()");
+		//TODO implement
 	}
 
 	public long getSeqNum() {
