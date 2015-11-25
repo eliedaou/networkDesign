@@ -23,7 +23,7 @@ public class ReceiverStateMachine extends StateMachine {
 	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) {
 		switch (currentState) {
 			case WAIT:
-
+				
 			default:
 				throw new InvalidStateException(currentState)
 		}

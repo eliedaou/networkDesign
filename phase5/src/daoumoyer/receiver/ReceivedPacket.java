@@ -5,30 +5,40 @@ import java.net.SocketAddress;
 
 public class ReceivedPacket {
 	private final boolean corrupt;
-	private final int seq;
-	private int checksum;
+	private long seq;
 	private final byte[] data;
-	private DatagramPacket packet;
 	private SocketAddress source;
 
 	public ReceivedPacket(DatagramPacket packet) {
-		this.packet = packet;
-		//do not need room for header
-		data = new byte[packet.getLength() - 24];
+		byte[] buffer = packet.getData();
+		int off = packet.getOffset();
+		int length = packet.getLength();
+
+		//do not need room for header, 4 bytes for checksum and 8 bytes for sequence
+		data = new byte[packet.getLength() - 12];
 
 		//copy array without header
-		System.arraycopy(packet.getData(), packet.getOffset() + 5, data, 0, packet.getLength() - 5);
+		System.arraycopy(buffer, off + 12, data, 0, length - 12);
+
+		//get checksum
+		int checksum = 0;
+		for (int i = 0; i < 4; ++i) {
+			checksum += ((int) buffer[i + off] & 0xff) << (4 - 1 - i)*8;
+		}
+
+		corrupt = checksum == calcChecksum(buffer, off + 4, length - 4);
 
 		//get header data
-		seq = packet.getData()[packet.getOffset() + 4];
-		checksum = makeChecksum();
-		corrupt = checkCorrupt(packet, checksum);
+		seq = 0;
+		for (int i = 0; i < 8; ++i) {
+			seq += ((long) buffer[i + off + 4] & 0xff) << (8 - 1 - i)*8;
+		}
 
 		//get source address
 		source = packet.getSocketAddress();
 	}
 
-	public int getSeq() {
+	public long getSeq() {
 		return seq;
 	}
 
@@ -40,21 +50,16 @@ public class ReceivedPacket {
 		return data;
 	}
 
-	private int calcChecksum(byte[] buffer, int offset) {
-		byte[] checksum = new byte[4];
-		for (int i = offset; i < buffer.length; ++i) {
-			checksum[(i - offset) % 4] ^= buffer[i];
+	private int calcChecksum(byte[] buffer, int offset, int length) {
+		byte[] checksumArray = new byte[4];
+		for (int i = offset; i < offset + length; ++i) {
+			checksumArray[(i - offset) % 4] ^= buffer[i];
+		}
+		int checksum = 0;
+		for (int i = 0; i < 4; ++i) {
+			checksum += ((int) checksumArray[i] & 0xff) << (4 - 1 - i)*8;
 		}
 		return checksum;
-	}
-
-	private boolean checkCorrupt(DatagramPacket packet, byte[] checksum) {
-		byte[] buff = packet.getData();
-		int off = packet.getOffset();
-		int len = packet.getLength();
-
-		return checksum[0] != buff[off] || checksum[1] != buff[off + 1] || checksum[2] != buff[off + 2]
-			|| checksum[3] != buff[off + 3];
 	}
 
 	public SocketAddress getSource() {

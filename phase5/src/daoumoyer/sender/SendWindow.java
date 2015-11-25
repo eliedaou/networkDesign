@@ -42,14 +42,14 @@ public class SendWindow {
 			//add file data
 			int length = fIn.read(buffer, headerSize, buffer.length - headerSize);
 
-			//add sequence number
-			for (int i = 0; i < 8; ++i) {
-				buffer[i] = (byte) (seqNum >> (8 - 1 - i)*8 & 0xff);
-			}
-
 			//add checksum
 			byte[] checksum = makeChecksum(buffer, headerSize);
-			System.arraycopy(checksum, 0, buffer, 8, 4);
+			System.arraycopy(checksum, 0, buffer, 0, 4);
+
+			//add sequence number
+			for (int i = 0; i < 8; ++i) {
+				buffer[i + 4] = (byte) (seqNum >> (8 - 1 - i)*8 & 0xff);
+			}
 
 			if (length == -1) {
 				packets.add(null);
