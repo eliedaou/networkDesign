@@ -12,11 +12,11 @@ public class ReceiverStateMachine extends StateMachine {
 	private AckToSend currentAck;
 	private DatagramSocket socket;
 
-	protected State delta(State currentState, Event event) {
+	protected State delta(State currentState, Event event) throws DoneException, IOException {
 		return delta((ReceiverState) currentState, (RcvReceiverEvent) event);
 	}
 
-	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) {
+	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) throws DoneException, IOException {
 		switch (currentState) {
 			case WAIT:
 				//make variables
