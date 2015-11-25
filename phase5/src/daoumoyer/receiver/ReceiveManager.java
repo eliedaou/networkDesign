@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import daoumoyer.statemachine.CannotAdvanceException;
+
 public class ReceiveManager implements Runnable {
 	private final ReceiverStateMachine machine;
 	private final DatagramSocket socket;
@@ -62,7 +64,7 @@ public class ReceiveManager implements Runnable {
 
 				//give the event to the state machine
 				machine.advance(event);
-			} catch (IOException e) {
+			} catch (IOException | CannotAdvanceException e ) {
 				System.err.println("Error: caught exception during main loop");
 				System.err.println("\tException: " + e);
 			}
