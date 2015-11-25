@@ -1,5 +1,7 @@
 package daoumoyer.receiver;
 
+import daoumoyer.receiver.event.RcvReceiverEvent;
+
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.io.FileOutputStream;
@@ -44,7 +46,7 @@ public class ReceiveManager implements Runnable {
 	@Override public void run() {
 		DatagramPacket dPacket;
 		ReceivedPacket packet;
-		ReceiverEvent event;
+		RcvReceiverEvent event;
 		byte[] rcvBuffer = new byte[1500];
 		while (true) {
 			//try to receive on socket until it is closed
@@ -55,7 +57,7 @@ public class ReceiveManager implements Runnable {
 
 				//build an event
 				packet = new ReceivedPacket(dPacket);
-				event = new ReceiverEvent(packet, fOut);
+				event = new RcvReceiverEvent(packet, fOut);
 
 				//break if last packet
 				if (!packet.isCorrupt() && (packet.getSeq() == -1)) break;

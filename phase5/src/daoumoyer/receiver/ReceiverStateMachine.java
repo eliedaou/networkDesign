@@ -1,5 +1,6 @@
 package daoumoyer.receiver;
 
+import daoumoyer.receiver.event.RcvReceiverEvent;
 import daoumoyer.statemachine.Event;
 import daoumoyer.statemachine.State;
 import daoumoyer.statemachine.StateMachine;
@@ -8,7 +9,6 @@ import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.SocketAddress;
 import java.io.IOException;
-import java.io.FileOutputStream;
 import java.net.SocketException;
 
 public class ReceiverStateMachine extends StateMachine {
@@ -16,10 +16,10 @@ public class ReceiverStateMachine extends StateMachine {
 	private DatagramSocket socket;
 
 	protected State delta(State currentState, Event event) {
-		return delta((ReceiverState) currentState, (ReceiverEvent) event);
+		return delta((ReceiverState) currentState, (RcvReceiverEvent) event);
 	}
 
-	protected ReceiverState delta(ReceiverState currentState, ReceiverEvent event) {
+	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) {
 		switch (currentState) {
 			case WAIT_FOR_0:
 				if (!event.isCorrupt() && (event.getSeq() == 0)) {

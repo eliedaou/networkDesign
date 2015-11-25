@@ -1,6 +1,6 @@
-package daoumoyer.sender.events;
+package daoumoyer.sender.event;
 
-import daoumoyer.sender.SimpleTimer;
+import daoumoyer.SimpleTimer;
 import daoumoyer.statemachine.Event;
 
 /**

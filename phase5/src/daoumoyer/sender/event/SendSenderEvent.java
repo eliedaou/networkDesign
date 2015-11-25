@@ -1,16 +1,15 @@
-package daoumoyer.sender.events;
+package daoumoyer.sender.event;
 
 import daoumoyer.sender.SendData;
-import daoumoyer.sender.SimpleTimer;
+import daoumoyer.SimpleTimer;
 
 /**
  * @author Grant Moyer
  * @since 2015-11-24
  */
-public class TimeoutSenderEvent extends SenderEvent {
+public class SendSenderEvent extends SenderEvent {
 	private SendData data;
-
-	public TimeoutSenderEvent(SimpleTimer timer, SendData data) {
+	public SendSenderEvent(SimpleTimer timer, SendData data) {
 		super(timer);
 		this.data = data;
 	}

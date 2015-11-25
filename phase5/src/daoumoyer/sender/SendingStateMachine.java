@@ -1,11 +1,10 @@
 package daoumoyer.sender;
 
-import daoumoyer.sender.events.*;
+import daoumoyer.SimpleTimer;
+import daoumoyer.sender.event.*;
 import daoumoyer.statemachine.*;
 
 import java.net.*;
-import java.io.*;
-import java.lang.Math;
 
 public class SendingStateMachine extends StateMachine {
 	private DatagramSocket socket;
@@ -75,7 +74,7 @@ public class SendingStateMachine extends StateMachine {
 					if (!rcvEvent.isCorrupt()) {
 						//create variables
 						SendWindow window = rcvEvent.getWindow();
-						AckPacket ack = rcvEvent.getAck();
+						RcvedAck ack = rcvEvent.getAck();
 						SimpleTimer timer = rcvEvent.getTimer();
 
 						//event logic

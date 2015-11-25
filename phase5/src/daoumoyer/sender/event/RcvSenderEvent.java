@@ -1,8 +1,8 @@
-package daoumoyer.sender.events;
+package daoumoyer.sender.event;
 
-import daoumoyer.sender.AckPacket;
+import daoumoyer.sender.RcvedAck;
 import daoumoyer.sender.SendWindow;
-import daoumoyer.sender.SimpleTimer;
+import daoumoyer.SimpleTimer;
 
 /**
  * @author Grant Moyer
@@ -10,9 +10,9 @@ import daoumoyer.sender.SimpleTimer;
  */
 public class RcvSenderEvent extends SenderEvent {
 	private SendWindow window;
-	private AckPacket ack;
+	private RcvedAck ack;
 
-	public RcvSenderEvent(SimpleTimer timer, SendWindow window, AckPacket ack) {
+	public RcvSenderEvent(SimpleTimer timer, SendWindow window, RcvedAck ack) {
 		super(timer);
 		this.window = window;
 		this.ack = ack;
@@ -24,7 +24,7 @@ public class RcvSenderEvent extends SenderEvent {
 
 	/* Getters */
 
-	public AckPacket getAck() {
+	public RcvedAck getAck() {
 		return ack;
 	}
 

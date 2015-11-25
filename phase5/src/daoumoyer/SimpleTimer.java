@@ -1,4 +1,4 @@
-package daoumoyer.sender;
+package daoumoyer;
 
 import java.util.Calendar;
 

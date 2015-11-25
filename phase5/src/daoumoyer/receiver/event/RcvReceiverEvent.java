@@ -1,5 +1,6 @@
-package daoumoyer.receiver;
+package daoumoyer.receiver.event;
 
+import daoumoyer.receiver.ReceivedPacket;
 import daoumoyer.statemachine.Event;
 
 import java.io.FileOutputStream;
@@ -9,11 +10,11 @@ import java.net.SocketAddress;
  * @author Grant Moyer
  * @since 2015-11-24
  */
-public class ReceiverEvent implements Event {
+public class RcvReceiverEvent implements Event {
 	private ReceivedPacket packet;
 	private FileOutputStream fOut;
 
-	public ReceiverEvent(ReceivedPacket packet, FileOutputStream fOut){
+	public RcvReceiverEvent(ReceivedPacket packet, FileOutputStream fOut){
 		this.packet = packet;
 		this.fOut = fOut;
 	}

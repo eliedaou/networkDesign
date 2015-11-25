@@ -1,22 +1,14 @@
 package daoumoyer.sender;
 
-import daoumoyer.sender.events.RcvSenderEvent;
-import daoumoyer.sender.events.SendSenderEvent;
-import daoumoyer.sender.events.SenderEvent;
-import daoumoyer.sender.events.TimeoutSenderEvent;
+import daoumoyer.SimpleTimer;
+import daoumoyer.sender.event.RcvSenderEvent;
+import daoumoyer.sender.event.SendSenderEvent;
+import daoumoyer.sender.event.TimeoutSenderEvent;
 import daoumoyer.statemachine.CannotAdvanceException;
 
-import java.lang.Void;
 import java.net.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.concurrent.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class SendManager implements Runnable {
 	private final SendingStateMachine machine;
@@ -98,7 +90,7 @@ public class SendManager implements Runnable {
 				DatagramPacket rcvPacket = new DatagramPacket(new byte[100], 100);
 				try {
 					socket.receive(rcvPacket);
-					AckPacket ack = new AckPacket(rcvPacket);
+					RcvedAck ack = new RcvedAck(rcvPacket);
 					RcvSenderEvent rcvEvent = new RcvSenderEvent(timer, data.getWindow(), ack);
 					machine.advance(rcvEvent);
 				} catch (SocketTimeoutException ignore) {}
