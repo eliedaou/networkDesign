@@ -74,7 +74,7 @@ public class SendingStateMachine extends StateMachine {
 					if (!rcvEvent.isCorrupt()) {
 						//create variables
 						SendWindow window = rcvEvent.getWindow();
-						RcvedAck ack = rcvEvent.getAck();
+						ReceivedAck ack = rcvEvent.getAck();
 						SimpleTimer timer = rcvEvent.getTimer();
 
 						//event logic

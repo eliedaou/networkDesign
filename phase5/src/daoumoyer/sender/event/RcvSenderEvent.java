@@ -1,6 +1,6 @@
 package daoumoyer.sender.event;
 
-import daoumoyer.sender.RcvedAck;
+import daoumoyer.sender.ReceivedAck;
 import daoumoyer.sender.SendWindow;
 import daoumoyer.SimpleTimer;
 
@@ -10,9 +10,9 @@ import daoumoyer.SimpleTimer;
  */
 public class RcvSenderEvent extends SenderEvent {
 	private SendWindow window;
-	private RcvedAck ack;
+	private ReceivedAck ack;
 
-	public RcvSenderEvent(SimpleTimer timer, SendWindow window, RcvedAck ack) {
+	public RcvSenderEvent(SimpleTimer timer, SendWindow window, ReceivedAck ack) {
 		super(timer);
 		this.window = window;
 		this.ack = ack;
@@ -24,7 +24,7 @@ public class RcvSenderEvent extends SenderEvent {
 
 	/* Getters */
 
-	public RcvedAck getAck() {
+	public ReceivedAck getAck() {
 		return ack;
 	}
 

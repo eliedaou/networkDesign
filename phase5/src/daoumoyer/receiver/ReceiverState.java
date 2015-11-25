@@ -7,6 +7,15 @@ import daoumoyer.statemachine.State;
  * @since 2015-11-24
  */
 public enum ReceiverState implements State {
-	WAIT_FOR_0,
-	WAIT_FOR_1
+	WAIT("WAIT");
+
+	private String stateName;
+
+	ReceiverState(String stateName) {
+		this.stateName = stateName;
+	}
+
+	public String toString() {
+		return stateName;
+	}
 }

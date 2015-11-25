@@ -2,6 +2,7 @@ package daoumoyer.receiver;
 
 import daoumoyer.receiver.event.RcvReceiverEvent;
 import daoumoyer.statemachine.Event;
+import daoumoyer.statemachine.InvalidStateException;
 import daoumoyer.statemachine.State;
 import daoumoyer.statemachine.StateMachine;
 
@@ -21,57 +22,11 @@ public class ReceiverStateMachine extends StateMachine {
 
 	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) {
 		switch (currentState) {
-			case WAIT_FOR_0:
-				if (!event.isCorrupt() && (event.getSeq() == 0)) {
-					//extract and deliver data
-					try {
-						event.getFOut().write(event.getData());
-					} catch (IOException e) {
-						System.err.println("Fatal: caught exception while writing to file");
-						System.err.println("\tException: " + e);
-						System.exit(-1);
-					}
+			case WAIT:
 
-					//send ACK 0
-					sendAck((byte) 0, event.getSource());
-
-					//set onceThrough
-					onceThrough = true;
-
-					//move to WAIT_FOR_1
-					return ReceiverState.WAIT_FOR_1;
-				} else if (event.isCorrupt() || (event.getSeq() != 0)) {
-					//send ACK 1
-					if (onceThrough) sendAck((byte) 1, event.getSource());
-
-					//stay in WAIT_FOR_0
-					return ReceiverState.WAIT_FOR_0;
-				}
-			case WAIT_FOR_1:
-				if (!event.isCorrupt() && (event.getSeq() == 1)) {
-					//extract and deliver data
-					try {
-						event.getFOut().write(event.getData());
-					} catch (IOException e) {
-						System.err.println("Fatal: caught exception while writing to file");
-						System.err.println("\tException: " + e);
-						System.exit(-1);
-					}
-
-					//send ACK 1
-					sendAck((byte) 1, event.getSource());
-
-					//move to WAIT_FOR_0
-					return ReceiverState.WAIT_FOR_0;
-				} else if (event.isCorrupt() || (event.getSeq() != 1)) {
-					//send ACK 0
-					sendAck((byte) 0, event.getSource());
-
-					//stay in WAIT_FOR_1
-					return ReceiverState.WAIT_FOR_1;
-				}
+			default:
+				throw new InvalidStateException(currentState)
 		}
-		return currentState;
 	}
 
 	protected State initialState() {

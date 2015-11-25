@@ -90,7 +90,7 @@ public class SendManager implements Runnable {
 				DatagramPacket rcvPacket = new DatagramPacket(new byte[100], 100);
 				try {
 					socket.receive(rcvPacket);
-					RcvedAck ack = new RcvedAck(rcvPacket);
+					ReceivedAck ack = new ReceivedAck(rcvPacket);
 					RcvSenderEvent rcvEvent = new RcvSenderEvent(timer, data.getWindow(), ack);
 					machine.advance(rcvEvent);
 				} catch (SocketTimeoutException ignore) {}

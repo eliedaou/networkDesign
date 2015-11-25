@@ -6,7 +6,7 @@ import java.net.SocketAddress;
 public class ReceivedPacket {
 	private final boolean corrupt;
 	private final int seq;
-	private byte[] checksum;
+	private int checksum;
 	private final byte[] data;
 	private DatagramPacket packet;
 	private SocketAddress source;
@@ -14,7 +14,7 @@ public class ReceivedPacket {
 	public ReceivedPacket(DatagramPacket packet) {
 		this.packet = packet;
 		//do not need room for header
-		data = new byte[packet.getLength() - 5];
+		data = new byte[packet.getLength() - 24];
 
 		//copy array without header
 		System.arraycopy(packet.getData(), packet.getOffset() + 5, data, 0, packet.getLength() - 5);
@@ -40,21 +40,12 @@ public class ReceivedPacket {
 		return data;
 	}
 
-	private byte[] makeChecksum() {
-		byte[] check = new byte[4];
-		byte[] buff = packet.getData();
-		int off = packet.getOffset() + 4;
-		int len = packet.getLength() - 4;
-
-		//xor every group of 32 bits in the data including seq
-		for (int i = 0; i < len; i += 4) {
-			check[0] ^= buff[off + i];
-			if (i + 1 < len) check[1] ^= buff[off + i + 1];
-			if (i + 2 < len) check[2] ^= buff[off + i + 2];
-			if (i + 3 < len) check[3] ^= buff[off + i + 3];
+	private int calcChecksum(byte[] buffer, int offset) {
+		byte[] checksum = new byte[4];
+		for (int i = offset; i < buffer.length; ++i) {
+			checksum[(i - offset) % 4] ^= buffer[i];
 		}
-
-		return check;
+		return checksum;
 	}
 
 	private boolean checkCorrupt(DatagramPacket packet, byte[] checksum) {

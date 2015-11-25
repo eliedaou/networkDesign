@@ -11,7 +11,7 @@ public enum SenderState implements State {
 
 	private String stateName;
 
-	private SenderState(String stateName) {
+	SenderState(String stateName) {
 		this.stateName = stateName;
 	}
 

@@ -37,7 +37,7 @@ public class SendWindow {
 
 	private void makePacket(long seqNum) {
 		byte[] buffer = new byte[packetSize];
-		int headerSize = 16; //8 for sequence number and 8 for checksum
+		int headerSize = 12; //8 for sequence number and 4 for checksum
 		try {
 			//add file data
 			int length = fIn.read(buffer, headerSize, buffer.length - headerSize);
@@ -49,9 +49,7 @@ public class SendWindow {
 
 			//add checksum
 			byte[] checksum = makeChecksum(buffer, headerSize);
-			for (int i = 0; i < 4; i++) {
-				buffer[8 + i] = checksum[i];
-			}
+			System.arraycopy(checksum, 0, buffer, 8, 4);
 
 			if (length == -1) {
 				packets.add(null);

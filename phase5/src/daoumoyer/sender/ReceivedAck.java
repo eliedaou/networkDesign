@@ -6,11 +6,11 @@ import java.net.DatagramPacket;
  * @author Grant Moyer
  * @since 2015-11-24
  */
-public class RcvedAck {
+public class ReceivedAck {
 	private boolean corrupt;
 	private long seqNum;
 
-	public RcvedAck(DatagramPacket packet) {
+	public ReceivedAck(DatagramPacket packet) {
 		byte[] bytes = packet.getData();
 
 		//get checksum in big endian format
