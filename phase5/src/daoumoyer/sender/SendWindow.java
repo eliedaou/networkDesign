@@ -42,14 +42,14 @@ public class SendWindow {
 			//add file data
 			int length = fIn.read(buffer, headerSize, buffer.length - headerSize);
 
-			//add checksum
-			byte[] checksum = makeChecksum(buffer, headerSize);
-			System.arraycopy(checksum, 0, buffer, 0, 4);
-
 			//add sequence number
 			for (int i = 0; i < 8; ++i) {
 				buffer[i + 4] = (byte) (seqNum >> (8 - 1 - i)*8 & 0xff);
 			}
+
+			//add checksum
+			byte[] checksum = makeChecksum(buffer, headerSize - 8);
+			System.arraycopy(checksum, 0, buffer, 0, 4);
 
 			if (length == -1) {
 				packets.add(null);
@@ -66,7 +66,7 @@ public class SendWindow {
 
 	private byte[] makeChecksum(byte[] buffer, int offset) {
 		byte[] checksum = new byte[4];
-		for (int i = offset; i < buffer.length; ++i) {
+		for (int i = offset; i < buffer.length - offset; ++i) {
 			checksum[(i - offset) % 4] ^= buffer[i];
 		}
 		return checksum;
@@ -99,11 +99,24 @@ public class SendWindow {
 			packets.remove(0);
 		}
 		this.base = base;
-		if (base >= endOfFile) throw new DoneException();
+		if (base >= endOfFile + 1) throw new DoneException();
 	}
 
 	public DatagramPacket getPacket(long seqNum) throws EndOfFileException {
-		if (seqNum >= base && seqNum < base + windowSize) {
+		if (base == endOfFile) { //last packet
+			byte[] buffer = new byte[12];
+
+			//add sequence number
+			for (int i = 0; i < 8; ++i) {
+				buffer[i + 4] = (byte) (-1 >> (8 - 1 - i)*8 & 0xff); //sequence number is -1 for last packet
+			}
+
+			//add checksum
+			byte[] checksum = makeChecksum(buffer, 4);
+			System.arraycopy(checksum, 0, buffer, 0, 4);
+
+			DatagramPacket packet = new Datagram packet(buffer, buffer.length, remoteAddress, remotePort);
+		} if (seqNum >= base && seqNum < base + windowSize) {
 			DatagramPacket packet = packets.get((int) (seqNum - base));
 			if (packet != null) {
 				return packet;

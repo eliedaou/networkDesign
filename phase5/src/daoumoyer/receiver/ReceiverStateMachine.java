@@ -1,6 +1,7 @@
 package daoumoyer.receiver;
 
 import daoumoyer.receiver.event.RcvReceiverEvent;
+import daoumoyer.sender.DoneException;
 import daoumoyer.statemachine.*;
 
 import java.net.*;
@@ -20,11 +21,16 @@ public class ReceiverStateMachine extends StateMachine {
 			case WAIT:
 				//make variables
 				long seqNum = event.getSeq();
-				currentAck = new AckToSend(seqNum, (InetSocketAddress) event.getSource());
 
 				//event logic
-				if (!event.isCorrupt() && seqNum == expectedSeqNum) {
-
+				if (seqNum == -1) {
+					throw new DoneException();
+				} else if (!event.isCorrupt() && seqNum == expectedSeqNum) {
+					byte[] data = event.getData();
+					event.getFOut().write(data);
+					currentAck = new AckToSend(seqNum, (InetSocketAddress) event.getSource());
+					sendAck(currentAck);
+					++expectedSeqNum;
 				} else {
 					sendAck(currentAck);
 				}
@@ -37,9 +43,10 @@ public class ReceiverStateMachine extends StateMachine {
 		return ReceiverState.WAIT;
 	}
 
-	public ReceiverStateMachine(DatagramSocket socket) {
+	public ReceiverStateMachine(DatagramSocket socket, InetAddress senderAddress, int senderPort) {
 		expectedSeqNum = 0;
 		this.socket = socket;
+		currentAck = new AckToSend(0, senderAddress, senderPort);
 	}
 
 	private void sendAck(AckToSend ack) {

@@ -78,7 +78,11 @@ public class SendingStateMachine extends StateMachine {
 						SimpleTimer timer = rcvEvent.getTimer();
 
 						//event logic
-						window.setBase(ack.getSeqNum() + 1);
+						try {
+							window.setBase(ack.getSeqNum() + 1);
+						} catch (DoneException e) {
+
+						}
 						if (window.getBase() == window.getNextSeqNum()) {
 							rcvEvent.getTimer().stop();
 						} else {
