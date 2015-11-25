@@ -1,6 +1,10 @@
 package daoumoyer.sender;
 
+import daoumoyer.sender.events.RcvSenderEvent;
+import daoumoyer.sender.events.SendSenderEvent;
 import daoumoyer.sender.events.SenderEvent;
+import daoumoyer.sender.events.TimeoutSenderEvent;
+import daoumoyer.statemachine.CannotAdvanceException;
 
 import java.lang.Void;
 import java.net.*;
@@ -24,6 +28,7 @@ public class SendManager implements Runnable {
 	private final double dataError;
 	private final double ackLoss;
 	private final double dataLoss;
+	private final SendData data;
 
 	public SendManager(FileInputStream fIn, double ackError, double dataError, double ackLoss, double dataLoss) {
 		// temporary variable needed for try-catch
@@ -75,133 +80,37 @@ public class SendManager implements Runnable {
 
 		// keep file input stream
 		this.fIn = fIn;
+		data = new SendData(fIn, remoteAddress, remotePort, socket);
 	}
 
 	public void run() {
+		SimpleTimer timer = new SimpleTimer(500);
 
-		DatagramPacket dataPacket;
-		ServerReceived packet;
-		SenderEvent event;
-		byte[] sendBuffer = new byte[1024];
-		byte[] receivedBuffer = new byte[1500];
-		byte[] data;
-		int bytesRead;
-		long total = 0;
-		try {
-			while ((bytesRead = fIn.read(sendBuffer, 5, sendBuffer.length - 5)) != -1) {
-				// make data array of correct size
-				data = new byte[bytesRead + 5];
-				System.arraycopy(sendBuffer, 0, data, 0, data.length);
-
-				// make packet from file
-				packet = new ServerReceived(data, remoteAddress, remotePort);
-
-				// build an event
-				event = new SenderEvent(packet);
-
-				// give the event to the state machine
-				machine.advance(event);
-
-				// wait for ACK
-				while (true) {
-					try {
-						waitForAck(machine, 300);
-						break;
-					} catch (TimeoutException e) { //send again on timeout
-						System.err.println("TIMEOUT!");
-						machine.advance(event);
-					}
-				}
-
-				total += bytesRead;
-				System.out.println(total + "bytes sent");
-			}
-		} catch (IOException e) {
-			System.err.println("Fatal: exception caugth while reading file");
-			System.err.println("\tException: " + e);
-			System.exit(-1);
-		}
-
-		// send final packet 100 times for safety
-		data = new byte[5];
-		data[0] = -1;
-		data[4] = -1;
-
-		for (int i = 0; i < 100; ++i) {
-			dataPacket = new DatagramPacket(data, data.length, remoteAddress,
-					remotePort);
+		//breaks when the windows base slides path the end of the file
+		while (true) {
 			try {
-				socket.send(dataPacket);
+				if (timer.expired()) machine.advance(new TimeoutSenderEvent(timer, data));
+
+				SendSenderEvent sendEvent = new SendSenderEvent(timer, data);
+				machine.advance(sendEvent);
+
+				socket.setSoTimeout(10);
+				DatagramPacket rcvPacket = new DatagramPacket(new byte[100], 100);
+				try {
+					socket.receive(rcvPacket);
+					AckPacket ack = new AckPacket(rcvPacket);
+					RcvSenderEvent rcvEvent = new RcvSenderEvent(timer, data.getWindow(), ack);
+					machine.advance(rcvEvent);
+				} catch (SocketTimeoutException ignore) {}
+			} catch (DoneException e) {
+				break;
+			} catch (CannotAdvanceException ignore) {
 			} catch (IOException e) {
-				System.err.println("Fatal: exception caugth while sending final packet");
+				System.err.println("Fatal: exception caught while waiting for ACK");
 				System.err.println("\tException: " + e);
 				System.exit(-1);
 			}
 		}
+		System.out.println("Done sending file");
 	}
-
-	private void waitForAck(SendingStateMachine machine, int timeout) throws TimeoutException {
-		DatagramPacket dataPacket;
-		ServerReceived packet;
-
-		socketReceiver sR = new socketReceiver();
-		ExecutorService exec = Executors.newSingleThreadExecutor();
-
-		final Future<Void> eventFuture = exec.submit(sR);
-
-		//can throw timeout exception
-		try {
-			eventFuture.get(timeout, TimeUnit.MILLISECONDS);
-		} catch (ExecutionException | InterruptedException e) {
-			System.err.println("Fatal: exception caught while waiting for ACK");
-			System.err.println("\tException: " + e);
-			System.exit(-1);
-		} finally {
-			exec.shutdownNow();
-		}
-	}
-
-	private class socketReceiver implements Callable<Void> {
-		public Void call() {
-			//keep looping until an non-corrupt event is received
-			while (true) {
-				byte[] sendBuffer = new byte[1024];
-				byte[] receivedBuffer = new byte[1500];
-				DatagramPacket dataPacket = new DatagramPacket(receivedBuffer, receivedBuffer.length);
-				ServerReceived packet;
-				try {
-					// get ack from network
-					socket.setSoTimeout(1);
-					while (true) {
-						try {
-							socket.receive(dataPacket);
-							break;
-						} catch (SocketTimeoutException e) {
-							try {
-								Thread.sleep(100);
-							} catch (InterruptedException excep) {
-								return null;
-							}
-						}
-					}
-
-					// build event
-					packet = new ServerReceived(dataPacket);
-					SenderEvent event = new SenderEvent(packet);
-
-					// give event to state machine
-					if (Math.random() > ackLoss) machine.advance(event);
-
-					//return if event was positive ACK
-					if (!machine.isWaitingForAck()) {
-						return null;
-					}
-
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
 }

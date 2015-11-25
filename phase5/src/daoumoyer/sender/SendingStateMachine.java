@@ -36,12 +36,11 @@ public class SendingStateMachine extends StateMachine {
 		prevEvent = null;
 	}
 
-	protected State delta(State currentState, Event event) throws DataRefusedException {
+	protected State delta(State currentState, Event event) throws DataRefusedException, DoneException {
 		return delta((SenderState) currentState, (SenderEvent) event);
-
 	}
 
-	protected SenderState delta(SenderState currentState, SenderEvent event) throws DataRefusedException {
+	protected SenderState delta(SenderState currentState, SenderEvent event) throws DataRefusedException, DoneException {
 		switch (currentState) {
 			case WAIT:
 				if (event instanceof SendSenderEvent) {

@@ -1,22 +1,23 @@
 package daoumoyer.sender;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 /**
  * @author Grant Moyer
  * @since 2015-11-24
  */
 public class SendData {
-	private File file;
+	private FileInputStream fIn;
 	private SendWindow window;
+	private DatagramSocket socket;
 
-	public SendData(File file) {
-		this.file = file;
-		window = new SendWindow();
-	}
-
-	public SendData(String path) {
-		this(new File(path));
+	public SendData(FileInputStream fIn, InetAddress remoteAddress, int remotePort, DatagramSocket socket) {
+		this.fIn = fIn;
+		this.socket = socket;
+		window = new SendWindow(fIn, remoteAddress, remotePort);
 	}
 
 	public SendWindow getWindow() {
@@ -24,7 +25,11 @@ public class SendData {
 	}
 
 	public void udtSend(long seqNum) {
-		throw new Error("Need to implement daoumoyer.sender.SendData.udtSend()");
-		//TODO implement
+		try {
+			socket.send(window.getPacket(seqNum));
+		} catch (EndOfFileException ignore) {
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

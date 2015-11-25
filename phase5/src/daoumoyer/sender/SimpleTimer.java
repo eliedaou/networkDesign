@@ -17,11 +17,7 @@ public class SimpleTimer {
 	}
 
 	public boolean expired() {
-		if (!stopped) {
-			return System.currentTimeMillis() >= endTime;
-		} else {
-			throw new RuntimeException("Timer is stopped");
-		}
+		return !stopped && System.currentTimeMillis() >= endTime;
 	}
 
 	public void restart() {
