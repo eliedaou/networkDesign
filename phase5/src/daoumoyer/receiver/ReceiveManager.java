@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import daoumoyer.sender.DoneException;
 import daoumoyer.statemachine.CannotAdvanceException;
 
 public class ReceiveManager implements Runnable {
@@ -46,29 +47,24 @@ public class ReceiveManager implements Runnable {
 	}
 
 	@Override public void run() {
-		DatagramPacket dPacket;
-		ReceivedPacket packet;
-		RcvReceiverEvent event;
-		byte[] rcvBuffer = new byte[1500];
 		while (true) {
-			//try to receive on socket until it is closed
 			try {
-				//get a packet from the network
-				dPacket = new DatagramPacket(rcvBuffer, rcvBuffer.length);
-				socket.receive(dPacket);
+				//get packet from network
+				byte[] buffer = new byte[1000];
+				DatagramPacket udpPacket = new DatagramPacket(buffer, buffer.length);
+				socket.receive(udpPacket);
+				ReceivedPacket rcvPacket = new ReceivedPacket(udpPacket);
 
-				//build an event
-				packet = new ReceivedPacket(dPacket);
-				event = new RcvReceiverEvent(packet, fOut);
-
-				//break if last packet
-				if (!packet.isCorrupt() && (packet.getSeq() == -1)) break;
-
-				//give the event to the state machine
-				machine.advance(event);
-			} catch (IOException | CannotAdvanceException e ) {
-				System.err.println("Error: caught exception during main loop");
-				System.err.println("\tException: " + e);
+				//make event
+				RcvReceiverEvent rcvEvent = new RcvReceiverEvent(rcvPacket, fOut);
+				machine.advance(rcvEvent);
+			} catch (DoneException e) {
+				break;
+			} catch (CannotAdvanceException ignore) {
+			} catch (IOException e) {
+				System.err.println("Fatal: exception caught while waiting for data");
+				e.printStackTrace();
+				System.exit(-1);
 			}
 		}
 	}
