@@ -31,10 +31,14 @@ public class ReceiverStateMachine extends StateMachine {
 					currentAck = new AckToSend(seqNum, (InetSocketAddress) event.getSource());
 					sendAck(currentAck);
 					++expectedSeqNum;
+
+					return ReceiverState.WAIT;
 				} else {
 					if (currentAck != null) {
 						sendAck(currentAck);
 					}
+
+					return ReceiverState.WAIT;
 				}
 			default:
 				throw new InvalidStateException(currentState);

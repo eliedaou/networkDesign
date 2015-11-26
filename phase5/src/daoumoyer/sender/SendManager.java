@@ -76,15 +76,25 @@ public class SendManager implements Runnable {
 	}
 
 	public void run() {
-		SimpleTimer timer = new SimpleTimer(500);
+		SimpleTimer timer = new SimpleTimer(50000);
 
 		//breaks when the windows base slides path the end of the file
 		while (true) {
 			try {
-				if (timer.expired()) machine.advance(new TimeoutSenderEvent(timer, data));
+				if (timer.expired()) {
+					try {
+						machine.advance(new TimeoutSenderEvent(timer, data));
+					} catch (DoneException e) {
+						break;
+					} catch (CannotAdvanceException ignore) {}
+				}
 
 				SendSenderEvent sendEvent = new SendSenderEvent(timer, data);
-				machine.advance(sendEvent);
+				try {
+					machine.advance(sendEvent);
+				} catch (DoneException e) {
+					break;
+				} catch (CannotAdvanceException ignore) {}
 
 				socket.setSoTimeout(10);
 				DatagramPacket rcvPacket = new DatagramPacket(new byte[100], 100);
@@ -92,11 +102,12 @@ public class SendManager implements Runnable {
 					socket.receive(rcvPacket);
 					ReceivedAck ack = new ReceivedAck(rcvPacket);
 					RcvSenderEvent rcvEvent = new RcvSenderEvent(timer, data.getWindow(), ack);
-					machine.advance(rcvEvent);
+					try {
+						machine.advance(rcvEvent);
+					} catch (DoneException e) {
+						break;
+					} catch (CannotAdvanceException ignore) {}
 				} catch (SocketTimeoutException ignore) {}
-			} catch (DoneException e) {
-				break;
-			} catch (CannotAdvanceException ignore) {
 			} catch (IOException e) {
 				System.err.println("Fatal: exception caught while waiting for ACK");
 				System.err.println("\tException: " + e);

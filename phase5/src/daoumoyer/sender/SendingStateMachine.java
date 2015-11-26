@@ -58,6 +58,8 @@ public class SendingStateMachine extends StateMachine {
 					} else {
 						throw new DataRefusedException();
 					}
+
+					return SenderState.WAIT;
 				} else if (event instanceof TimeoutSenderEvent) {
 					//create variables
 					TimeoutSenderEvent timeoutEvent = (TimeoutSenderEvent) event;
@@ -69,6 +71,8 @@ public class SendingStateMachine extends StateMachine {
 					for (long i = window.getBase(); i < window.getNextSeqNum(); ++i) {
 						data.udtSend(i);
 					}
+
+					return SenderState.WAIT;
 				} else if (event instanceof RcvSenderEvent) {
 					RcvSenderEvent rcvEvent = (RcvSenderEvent) event;
 					if (!rcvEvent.isCorrupt()) {
@@ -88,6 +92,8 @@ public class SendingStateMachine extends StateMachine {
 						} else {
 							rcvEvent.getTimer().restart();
 						}
+
+						return SenderState.WAIT;
 					} else {
 						//event logic
 						return SenderState.WAIT;

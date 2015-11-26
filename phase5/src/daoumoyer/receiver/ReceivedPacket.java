@@ -26,7 +26,7 @@ public class ReceivedPacket {
 			checksum += ((int) buffer[i + off] & 0xff) << (4 - 1 - i)*8;
 		}
 
-		corrupt = checksum == calcChecksum(buffer, off + 4, length - 4);
+		corrupt = checksum != calcChecksum(buffer, off + 4, length - 4);
 
 		//get header data
 		seq = 0;

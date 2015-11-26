@@ -30,8 +30,8 @@ public class SendWindow {
 
 		//populate window with packets
 		this.fIn = fIn;
-		for (nextSeqNum = 0; nextSeqNum < windowSize; ++nextSeqNum) {
-			makePacket(nextSeqNum);
+		for (int i = 0; i < windowSize; ++i) {
+			makePacket(i);
 		}
 	}
 
@@ -55,7 +55,7 @@ public class SendWindow {
 				packets.add(null);
 				if (endOfFile == -1) endOfFile = seqNum;
 			} else {
-				packets.add(new DatagramPacket(buffer, 0, length, remoteAddress, remotePort));
+				packets.add(new DatagramPacket(buffer, 0, buffer.length, remoteAddress, remotePort));
 			}
 		} catch (IOException e) {
 			System.err.println("Fatal: exception caught while reading file");
@@ -90,13 +90,13 @@ public class SendWindow {
 
 	public void incrementNext() {
 		++nextSeqNum;
-		makePacket(nextSeqNum);
 	}
 
 	public void setBase(long base) throws DoneException {
 		if (base <= this.base) throw new NotInWindowException(this.base, nextSeqNum, base);
 		for (long i = this.base; i < base; ++i) {
 			packets.remove(0);
+			makePacket(i + windowSize);
 		}
 		this.base = base;
 		if (base >= endOfFile + 1) throw new DoneException();

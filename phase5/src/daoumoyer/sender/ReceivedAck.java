@@ -27,7 +27,7 @@ public class ReceivedAck {
 			seqNum += ((long) bytes[o + i] & 0xff) << (8 - 1 - i)*8;
 		}
 
-		corrupt = seqNum == check;
+		corrupt = seqNum != check;
 	}
 
 
