@@ -74,12 +74,12 @@ public class SendingStateMachine extends StateMachine {
 
 					return SenderState.WAIT;
 				} else if (event instanceof RcvSenderEvent) {
+					//create variables
 					RcvSenderEvent rcvEvent = (RcvSenderEvent) event;
-					if (!rcvEvent.isCorrupt()) {
-						//create variables
-						SendWindow window = rcvEvent.getWindow();
-						ReceivedAck ack = rcvEvent.getAck();
-						SimpleTimer timer = rcvEvent.getTimer();
+					SendWindow window = rcvEvent.getWindow();
+					ReceivedAck ack = rcvEvent.getAck();
+					SimpleTimer timer = rcvEvent.getTimer();
+					if (!rcvEvent.isCorrupt() && ack.getSeqNum() > window.getBase() - 1) {
 
 						//event logic
 						try {

@@ -76,7 +76,7 @@ public class SendManager implements Runnable {
 	}
 
 	public void run() {
-		SimpleTimer timer = new SimpleTimer(50000);
+		SimpleTimer timer = new SimpleTimer(1000);
 
 		//breaks when the windows base slides path the end of the file
 		while (true) {

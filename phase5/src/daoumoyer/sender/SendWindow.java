@@ -15,7 +15,7 @@ public class SendWindow {
 	private long base;
 	private long nextSeqNum;
 	private long endOfFile;
-	private long windowSize = 100;
+	private long windowSize = 20;
 	private int packetSize = 1000;
 	private InetAddress remoteAddress;
 	private int remotePort;
@@ -66,7 +66,7 @@ public class SendWindow {
 
 	private byte[] makeChecksum(byte[] buffer, int offset) {
 		byte[] checksum = new byte[4];
-		for (int i = offset; i < buffer.length - offset; ++i) {
+		for (int i = offset; i < buffer.length; ++i) {
 			checksum[(i - offset) % 4] ^= buffer[i];
 		}
 		return checksum;
@@ -116,7 +116,8 @@ public class SendWindow {
 			System.arraycopy(checksum, 0, buffer, 0, 4);
 
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length, remoteAddress, remotePort);
-		} if (seqNum >= base && seqNum < base + windowSize) {
+			return packet;
+		} else if (seqNum >= base && seqNum < base + windowSize) {
 			DatagramPacket packet = packets.get((int) (seqNum - base));
 			if (packet != null) {
 				return packet;
