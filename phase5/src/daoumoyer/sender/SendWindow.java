@@ -73,10 +73,6 @@ public class SendWindow {
 		for (int i = offset; i < buffer.length; ++i) {
 			checksum[(i - offset) % 4] ^= buffer[i];
 		}
-		if (Math.random() < dataError) {
-			checksum[offset+1] = 0;
-			System.out.println("Simulated data packet corruption " + ++corruptcount + " times");
-		}
 		return checksum;
 	}
 
@@ -127,7 +123,16 @@ public class SendWindow {
 		} else if (seqNum >= base && seqNum < base + windowSize) {
 			DatagramPacket packet = packets.get((int) (seqNum - base));
 			if (packet != null) {
-				return packet;
+				//simulate data packet error dataError proportion of the time
+				if (Math.random() < dataError) {
+					byte[] buffer = new byte[packet.getLength()];
+					System.arraycopy(packet.getData(), packet.getOffset(), buffer, 0, packet.getLength());
+					buffer[0] = (byte) (-buffer[0] & 0xff);
+					System.out.println("Simulated data packet corruption " + ++corruptcount + " times");
+					return new DatagramPacket(buffer, buffer.length,remoteAddress, remotePort);
+				} else {
+					return packet;
+				}
 			} else {
 				throw new EndOfFileException();
 			}
