@@ -100,7 +100,8 @@ public class SendManager implements Runnable {
 				DatagramPacket rcvPacket = new DatagramPacket(new byte[100], 100);
 				try {
 					socket.receive(rcvPacket);
-					ReceivedAck ack = new ReceivedAck(rcvPacket);
+
+					ReceivedAck ack = new ReceivedAck(rcvPacket, ackError, ackLoss);
 					RcvSenderEvent rcvEvent = new RcvSenderEvent(timer, data.getWindow(), ack);
 					try {
 						machine.advance(rcvEvent);

@@ -9,10 +9,14 @@ import java.net.DatagramPacket;
 public class ReceivedAck {
 	private boolean corrupt;
 	private long seqNum;
-
-	public ReceivedAck(DatagramPacket packet) {
+	private double ackError;
+	private double ackLoss;
+	
+	public ReceivedAck(DatagramPacket packet, double ackError, double ackLoss) {
 		byte[] bytes = packet.getData();
-
+		this.ackError = ackError;
+		this.ackLoss = ackLoss;
+		
 		//get checksum in big endian format
 		int o = packet.getOffset();
 		long check = 0;
