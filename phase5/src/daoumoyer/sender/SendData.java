@@ -16,11 +16,11 @@ public class SendData {
 	private DatagramSocket socket;
 	private double dataLoss;
 
-	public SendData(FileInputStream fIn, InetAddress remoteAddress, int remotePort, DatagramSocket socket, double dataLoss) {
+	public SendData(FileInputStream fIn, InetAddress remoteAddress, int remotePort, DatagramSocket socket, double dataLoss, double dataError) {
 		this.fIn = fIn;
 		this.socket = socket;
 		this.dataLoss = dataLoss;
-		window = new SendWindow(fIn, remoteAddress, remotePort);
+		window = new SendWindow(fIn, remoteAddress, remotePort, dataError);
 	}
 
 	public SendWindow getWindow() {
