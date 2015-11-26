@@ -10,7 +10,6 @@ import java.net.InetSocketAddress;
  */
 public class AckToSend {
 	private DatagramPacket packet;
-	private long seqNum;
 
 	public AckToSend(long seqNum, InetAddress senderAddress, int senderPort) {
 

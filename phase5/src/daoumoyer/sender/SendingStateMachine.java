@@ -79,14 +79,14 @@ public class SendingStateMachine extends StateMachine {
 					SendWindow window = rcvEvent.getWindow();
 					ReceivedAck ack = rcvEvent.getAck();
 					SimpleTimer timer = rcvEvent.getTimer();
+					if (!rcvEvent.isCorrupt() && ack.getSeqNum() == -1) {
+						throw new DoneException();
+					}
 					if (!rcvEvent.isCorrupt() && ack.getSeqNum() > window.getBase() - 1) {
 
 						//event logic
-						try {
-							window.setBase(ack.getSeqNum() + 1);
-						} catch (DoneException e) {
+						window.setBase(ack.getSeqNum() + 1);
 
-						}
 						if (window.getBase() == window.getNextSeqNum()) {
 							rcvEvent.getTimer().stop();
 						} else {

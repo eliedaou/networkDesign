@@ -23,7 +23,12 @@ public class ReceiverStateMachine extends StateMachine {
 				long seqNum = event.getSeq();
 
 				//event logic
-				if (seqNum == -1) {
+				if (seqNum == -1 && !event.isCorrupt()) {
+					AckToSend finalAck = new AckToSend(-1, (InetSocketAddress) event.getSource());
+					//send finalAck many times to be safe
+					for (int i = 0; i < 100; ++i) {
+						sendAck(finalAck);
+					}
 					throw new DoneException();
 				} else if (!event.isCorrupt() && seqNum == expectedSeqNum) {
 					byte[] data = event.getData();

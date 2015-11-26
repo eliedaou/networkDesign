@@ -92,14 +92,13 @@ public class SendWindow {
 		++nextSeqNum;
 	}
 
-	public void setBase(long base) throws DoneException {
+	public void setBase(long base) {
 		if (base <= this.base) throw new NotInWindowException(this.base, nextSeqNum, base);
 		for (long i = this.base; i < base; ++i) {
 			packets.remove(0);
 			makePacket(i + windowSize);
 		}
 		this.base = base;
-		if (base >= endOfFile + 1) throw new DoneException();
 	}
 
 	public DatagramPacket getPacket(long seqNum) throws EndOfFileException {
