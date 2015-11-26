@@ -10,6 +10,7 @@ import java.lang.Math;
 public class ReceivedAck {
 	private boolean corrupt;
 	private long seqNum;
+	private static long corruptcount;
 	
 	public ReceivedAck(DatagramPacket packet, double ackError) {
 		byte[] bytes = packet.getData();
@@ -23,8 +24,10 @@ public class ReceivedAck {
 			if (checkIfBitError < ackError) {
 				++check;
 			}
-
 			check += ((long) bytes[o + i] & 0xff) << (8 - 1 - i)*8;
+		}
+		if (checkIfBitError < ackError) {
+			System.out.println("Simulated ACK packet corruption " + ++corruptcount + " times");
 		}
 		//get sequence number in big endian format
 		o += 8;

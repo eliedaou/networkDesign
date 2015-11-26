@@ -23,6 +23,7 @@ public class SendWindow {
 	private FileInputStream fIn;
 	private List<DatagramPacket> packets = new LinkedList<>();
 	private double dataError;
+	private static long corruptcount;
 
 	public SendWindow(FileInputStream fIn, InetAddress remoteAddress, int remotePort, double dataError) {
 		base = 0;
@@ -74,6 +75,7 @@ public class SendWindow {
 		}
 		if (Math.random() < dataError) {
 			checksum[offset+1] = 0;
+			System.out.println("Simulated data packet corruption " + ++corruptcount + " times");
 		}
 		return checksum;
 	}

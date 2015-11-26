@@ -21,6 +21,7 @@ public class SendManager implements Runnable {
 	private final double ackLoss;
 	private final double dataLoss;
 	private final SendData data;
+	private long dropcount;
 
 	public SendManager(FileInputStream fIn, double ackError, double dataError, double ackLoss, double dataLoss) {
 		// temporary variable needed for try-catch
@@ -107,6 +108,8 @@ public class SendManager implements Runnable {
 						// simulate ack loss ackLoss proportion of the time by dropping it here
 						if (Math.random() >= ackLoss) {
 							machine.advance(rcvEvent);
+						} else {
+							System.out.println("Simulated dropped ACK packet " + ++dropcount + " times");
 						}
 					} catch (DoneException e) {
 						break;
