@@ -40,7 +40,7 @@ public class ReceiveManager implements Runnable {
 		}));
 
 		//start state machine
-		machine = new ReceiverStateMachine(socket, socket.getInetAddress(), socket.getPort());
+		machine = new ReceiverStateMachine(socket);
 
 		//keep file variable
 		this.fOut = fOut;

@@ -32,7 +32,9 @@ public class ReceiverStateMachine extends StateMachine {
 					sendAck(currentAck);
 					++expectedSeqNum;
 				} else {
-					sendAck(currentAck);
+					if (currentAck != null) {
+						sendAck(currentAck);
+					}
 				}
 			default:
 				throw new InvalidStateException(currentState);
@@ -43,10 +45,10 @@ public class ReceiverStateMachine extends StateMachine {
 		return ReceiverState.WAIT;
 	}
 
-	public ReceiverStateMachine(DatagramSocket socket, InetAddress senderAddress, int senderPort) {
+	public ReceiverStateMachine(DatagramSocket socket) {
 		expectedSeqNum = 0;
 		this.socket = socket;
-		currentAck = new AckToSend(0, senderAddress, senderPort);
+		currentAck = null;
 	}
 
 	private void sendAck(AckToSend ack) {
