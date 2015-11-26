@@ -101,10 +101,13 @@ public class SendManager implements Runnable {
 				try {
 					socket.receive(rcvPacket);
 
-					ReceivedAck ack = new ReceivedAck(rcvPacket, ackError, ackLoss);
+					ReceivedAck ack = new ReceivedAck(rcvPacket, ackError);
 					RcvSenderEvent rcvEvent = new RcvSenderEvent(timer, data.getWindow(), ack);
 					try {
-						machine.advance(rcvEvent);
+						// simulate ack loss ackLoss proportion of the time by dropping it here
+						if (Math.random() >= ackLoss) {
+							machine.advance(rcvEvent);
+						}
 					} catch (DoneException e) {
 						break;
 					} catch (CannotAdvanceException ignore) {}
