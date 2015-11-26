@@ -72,7 +72,7 @@ public class SendManager implements Runnable {
 
 		// keep file input stream
 		this.fIn = fIn;
-		data = new SendData(fIn, remoteAddress, remotePort, socket);
+		data = new SendData(fIn, remoteAddress, remotePort, socket, dataLoss);
 	}
 
 	public void run() {

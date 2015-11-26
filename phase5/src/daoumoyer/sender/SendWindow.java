@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.LinkedList;
 import java.util.List;
+import java.lang.Math;
 
 /**
  * @author Grant Moyer
@@ -21,10 +22,12 @@ public class SendWindow {
 	private int remotePort;
 	private FileInputStream fIn;
 	private List<DatagramPacket> packets = new LinkedList<>();
+	private double dataError;
 
-	public SendWindow(FileInputStream fIn, InetAddress remoteAddress, int remotePort) {
+	public SendWindow(FileInputStream fIn, InetAddress remoteAddress, int remotePort, double dataError) {
 		base = 0;
 		endOfFile = -1;
+		this.dataError = dataError;
 		this.remoteAddress = remoteAddress;
 		this.remotePort = remotePort;
 
@@ -68,6 +71,9 @@ public class SendWindow {
 		byte[] checksum = new byte[4];
 		for (int i = offset; i < buffer.length; ++i) {
 			checksum[(i - offset) % 4] ^= buffer[i];
+		}
+		if (Math.random() < dataError) {
+			checksum[offset+1] = 0;
 		}
 		return checksum;
 	}

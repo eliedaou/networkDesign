@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.lang.Math;
 
 /**
  * @author Grant Moyer
@@ -13,10 +14,12 @@ public class SendData {
 	private FileInputStream fIn;
 	private SendWindow window;
 	private DatagramSocket socket;
+	private double dataLoss;
 
-	public SendData(FileInputStream fIn, InetAddress remoteAddress, int remotePort, DatagramSocket socket) {
+	public SendData(FileInputStream fIn, InetAddress remoteAddress, int remotePort, DatagramSocket socket, double dataLoss) {
 		this.fIn = fIn;
 		this.socket = socket;
+		this.dataLoss = dataLoss;
 		window = new SendWindow(fIn, remoteAddress, remotePort);
 	}
 
@@ -26,7 +29,7 @@ public class SendData {
 
 	public void udtSend(long seqNum) {
 		try {
-			socket.send(window.getPacket(seqNum));
+			if (Math.random() > dataLoss) socket.send(window.getPacket(seqNum));
 		} catch (EndOfFileException ignore) {
 		} catch (IOException e) {
 			e.printStackTrace();
