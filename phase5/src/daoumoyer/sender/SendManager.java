@@ -78,7 +78,8 @@ public class SendManager implements Runnable {
 
 	public void run() {
 		SimpleTimer timer = new SimpleTimer(300);
-
+		long startTime = System.currentTimeMillis();
+		
 		//breaks when the windows base slides path the end of the file
 		while (true) {
 			try {
@@ -121,6 +122,7 @@ public class SendManager implements Runnable {
 				System.exit(-1);
 			}
 		}
-		System.out.println("Done sending file");
+		
+		System.out.println("Done sending file. Took " + (System.currentTimeMillis() - startTime) + "milliseconds");
 	}
 }
