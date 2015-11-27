@@ -137,11 +137,4 @@ public class SendingStateMachine extends StateMachine {
         return check;
     }
 
-<<<<<<< HEAD
-	public boolean isWaitingForAck() {
-		return CurrentState() == SendState.WAIT_FOR_0 || CurrentState() == SendState.WAIT_FOR_1;
-	}
-
-=======
->>>>>>> SendingStateMachine
 }

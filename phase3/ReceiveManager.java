@@ -24,6 +24,7 @@ public class ReceiveManager implements Runnable {
 
         //close socket when program exits
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
             public void run() {
                 if (socket.isBound() && !socket.isClosed()) {
                     socket.close();
@@ -39,6 +40,7 @@ public class ReceiveManager implements Runnable {
         this.fOut = fOut;
     }
 
+    @Override
     public void run() {
         DatagramPacket dPacket;
         ReceivedPacket packet;
