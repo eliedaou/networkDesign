@@ -34,7 +34,7 @@ Files and purposes:
 	│   ├── artifacts/ - contain packaged jar files for Sender and Receiver
 	│   └── production/ - contains compiled class files
 	├── phase5.iml - IntelliJ IDEA project file
-	├── pic1.jpg - an about 1MB image file to send
+	├── bigTestImage.jpg - an about 1MB image file to send
 	├── ReadMe.txt - this file
 	├── src/ - contains all the phase 5 source files. The purpose of each file is detailed in MoyerDaou.doc
 	└── testImage.png - a small image file to send
