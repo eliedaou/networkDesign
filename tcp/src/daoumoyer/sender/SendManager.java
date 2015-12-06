@@ -1,6 +1,8 @@
 package daoumoyer.sender;
 
 import daoumoyer.SimpleTimer;
+import daoumoyer.tcp.TCPStateMachine;
+
 import daoumoyer.sender.event.RcvSenderEvent;
 import daoumoyer.sender.event.SendSenderEvent;
 import daoumoyer.sender.event.TimeoutSenderEvent;

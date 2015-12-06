@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.net.InetSocketAddress;
 
-public class Sender {
+public class Server {
 	public static byte [] fileToSend = null;
 	public static InetSocketAddress sourceSocket = null;
 

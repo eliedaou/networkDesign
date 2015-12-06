@@ -9,7 +9,7 @@ import java.util.Scanner;
 import java.util.NoSuchElementException;
 import java.lang.IllegalStateException;
 
-public class Receiver {
+public class Client {
 
 	private static FileOutputStream stream;
 
