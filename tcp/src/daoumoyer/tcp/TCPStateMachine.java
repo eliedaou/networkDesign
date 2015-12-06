@@ -9,8 +9,10 @@ import daoumoyer.tcp.event.TimeoutTCPEvent;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -26,6 +28,9 @@ public class TCPStateMachine extends StateMachine {
 	private boolean sendAck;
 	private short rcvWin;
 
+	private LinkedList<TCPSegmentToSend> nonAckedSegments;
+
+	private final DatagramSocket udpSocket;
 	private final InetAddress remoteAddress;
 	private final int remotePort;
 	private final short sourcePort;
@@ -59,31 +64,59 @@ public class TCPStateMachine extends StateMachine {
 					}
 
 					//pass segment to IP
-					byte[] buffer = segment.toBytes();
-					DatagramPacket datagram = new DatagramPacket(buffer, buffer.length, remoteAddress, remotePort);
+					sendSegment(segment);
 
 					data.position(0);
 					nextSeqNum = nextSeqNum + data.remaining();
 
 					return TCPState.WAIT;
 				} else if (event instanceof TimeoutTCPEvent) {
+					//retransmit not-yet-acknowledged segment with smallest sequence number
+					sendSegment(nonAckedSegments.getFirst());
 
+					SimpleTimer timer = event.getTimer();
+					timer.restart();
+
+					return TCPState.WAIT;
 				} else if (event instanceof DataReceivedTCPEvent) {
-
+					TCPSegmentReceived segment = ((DataReceivedTCPEvent) event).getSegment();
+					if (segment.getAckNum() > sendBase) {
+						sendBase = segment.getAckNum();
+						if (nonAckedSegments.size() > 0) {
+							SimpleTimer timer = event.getTimer();
+							timer.restart();
+						}
+					}
+					return TCPState.WAIT;
 				}
 			default:
 				throw new InvalidStateException(currentState);
 		}
 	}
 
-	public TCPStateMachine(short sourcePort, short destPort, InetAddress remoteAddress, int remotePort) {
-		int rand = (new Random()).nextInt();
-		nextSeqNum = rand;
-		sendBase = rand;
+	private void sendSegment(TCPSegmentToSend segment) {
+		byte[] buffer = segment.toBytes();
+		DatagramPacket datagram = new DatagramPacket(buffer, buffer.length, remoteAddress, remotePort);
+		try {
+			udpSocket.send(datagram);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		nonAckedSegments.add(segment);
+	}
 
+	public TCPStateMachine(short sourcePort, short destPort, DatagramSocket udpSocket, InetAddress remoteAddress, int remotePort) {
+
+		this.udpSocket = udpSocket;
 		this.remoteAddress = remoteAddress;
 		this.remotePort = remotePort;
 		this.sourcePort = sourcePort;
 		this.destPort = destPort;
+
+		int rand = (new Random()).nextInt();
+		nextSeqNum = rand;
+		sendBase = rand;
+
+		nonAckedSegments = new LinkedList<>();
 	}
 }
