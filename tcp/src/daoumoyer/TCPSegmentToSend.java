@@ -19,8 +19,6 @@ public class TCPSegmentToSend extends TCPSegment{
 		this(MSS);
 	}
 
-	//TODO implement all set*() methods
-
 	public void setSrcPort(short srcPort) {
 		buffer.putShort(0, srcPort);
 	}
@@ -106,6 +104,12 @@ public class TCPSegmentToSend extends TCPSegment{
 	}
 
 	public void setData(ByteBuffer data) {
-		
+		buffer.position(getHeadLen());
+		buffer.put(data);
+	}
+
+	public void setData(byte[] data) {
+		buffer.position(getHeadLen());
+		buffer.put(data);
 	}
 }
