@@ -1,4 +1,4 @@
-package daoumoyer;
+package daoumoyer.tcp;
 
 /**
  * @author Grant Moyer

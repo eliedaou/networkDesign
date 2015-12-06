@@ -1,4 +1,4 @@
-package daoumoyer;
+package daoumoyer.tcp;
 
 import java.nio.ByteBuffer;
 
@@ -38,14 +38,6 @@ public class TCPSegmentToSend extends TCPSegment{
 	public void setHeadLen(byte headLen) {
 		buffer.put(12, (byte) (headLen << 4));
 	}
-
-	//Flag constants
-	private static final byte URG = 0b00100000;
-	private static final byte ACK = 0b00010000;
-	private static final byte PSH = 0b00001000;
-	private static final byte RST = 0b00000100;
-	private static final byte SYN = 0b00000010;
-	private static final byte FIN = 0b00000001;
 
 	public void setFlags(byte flags) {
 		flags &= 0b00111111;

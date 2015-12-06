@@ -1,4 +1,4 @@
-package daoumoyer;
+package daoumoyer.tcp;
 
 import java.nio.ByteBuffer;
 
@@ -33,29 +33,36 @@ public abstract class TCPSegment {
 		return (byte) (buffer.get(13) & 0b00111111);
 	}
 
+	//Flag constants
+	protected static final byte URG = 0b00100000;
+	protected static final byte ACK = 0b00010000;
+	protected static final byte PSH = 0b00001000;
+	protected static final byte RST = 0b00000100;
+	protected static final byte SYN = 0b00000010;
+	protected static final byte FIN = 0b00000001;
+
 	public boolean isUrg() {
-		return (getFlags() & 0b00100000) != 0;
+		return (getFlags() & URG) != 0;
 	}
 
 	public boolean isAck() {
-		return (getFlags() & 0b00010000) != 0;
+		return (getFlags() & ACK) != 0;
 	}
 
 	public boolean isPsh() {
-		return (getFlags() & 0b00001000) != 0;
-
+		return (getFlags() & PSH) != 0;
 	}
 
 	public boolean isRst() {
-		return (getFlags() & 0b00000100) != 0;
+		return (getFlags() & RST) != 0;
 	}
 
 	public boolean isSyn() {
-		return (getFlags() & 0b00000010) != 0;
+		return (getFlags() & SYN) != 0;
 	}
 
 	public boolean isFin() {
-		return (getFlags() & 0b00000001) != 0;
+		return (getFlags() & FIN) != 0;
 	}
 
 	public short getRcvWin() {
