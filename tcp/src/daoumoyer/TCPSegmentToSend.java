@@ -56,39 +56,57 @@ public class TCPSegmentToSend extends TCPSegment{
 
 	public void setFlags(byte flags) {
 		flags &= 0b00111111;
+
+		buffer.put(13, flags);
 	}
 
 	public void setFlags(int flags) {
 		setFlags((byte) (flags & 0xff));
 	}
 
-	public boolean setUrg() {
+	private void setFlag(byte flag, boolean value) {
+		byte flags = getFlags();
+		if (value) {
+			flags |= flag;
+		} else {
+			flags &= ~(flag & 0xff);
+		}
+		setFlags(flags);
 	}
 
-	public boolean setAck() {
+	public void setUrg(boolean urg) {
+		setFlag(URG, urg);
 	}
 
-	public boolean setPsh() {
+	public void setAck(boolean ack) {
+		setFlag(ACK, ack);
 	}
 
-	public boolean setRst() {
+	public void setPsh(boolean psh) {
+		setFlag(PSH, psh);
 	}
 
-	public boolean setSyn() {
+	public void setRst(boolean rst) {
+		setFlag(RST, rst);
 	}
 
-	public boolean setFin() {
+	public void setSyn(boolean syn) {
+		setFlag(SYN, syn);
 	}
 
-	public short setRcvWin() {
+	public void setFin(boolean fin) {
+		setFlag(FIN, fin);
 	}
 
-	public short setChecksum() {
+	public void setRcvWin(short RcvWin) {
 	}
 
-	public short setUrgDataPointer() {
+	public void setChecksum(short checksum) {
 	}
 
-	public ByteBuffer setData() {
+	public void setUrgDataPointer(short urgDataPointer) {
+	}
+
+	public void setData(ByteBuffer data) {
 	}
 }
