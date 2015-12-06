@@ -1,5 +1,7 @@
 package daoumoyer.tcp;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -20,6 +22,52 @@ public class TCPSegmentToSend extends TCPSegment{
 	//make maximum sized segment, can be made smaller later with buffer.limit()
 	public TCPSegmentToSend() {
 		this(MSS);
+	}
+
+	//Construct a full TCP segment to send right away
+	public TCPSegmentToSend(short srcPort, short destPort, int seqNum, int ackNum, int flags, short rcvWin, short urgDataPointer, byte[] data) {
+		buffer = ByteBuffer.allocateDirect(20 + data.length);
+
+		setSrcPort(srcPort);
+		setDestPort(destPort);
+		setSeqNum(seqNum);
+		setAckNum(ackNum);
+		setHeadLen((byte) 5);
+		setFlags(flags);
+		setRcvWin(rcvWin);
+		setUrgDataPointer(urgDataPointer);
+		setData(data);
+		setChecksum(calcChecksum());
+	}
+
+	//Construct a full TCP segment to send right away
+	public TCPSegmentToSend(short srcPort, short destPort, int seqNum, int ackNum, int flags, short rcvWin, short urgDataPointer, ByteBuffer data) {
+		buffer = ByteBuffer.allocateDirect(20 + data.remaining());
+
+		setSrcPort(srcPort);
+		setDestPort(destPort);
+		setSeqNum(seqNum);
+		setAckNum(ackNum);
+		setHeadLen((byte) 5);
+		setFlags(flags);
+		setRcvWin(rcvWin);
+		setUrgDataPointer(urgDataPointer);
+		setData(data);
+		setChecksum(calcChecksum());
+	}
+
+	protected short calcChecksum() {
+		//ToDo implement checksum calculation
+		throw new UnsupportedOperationException("Needs to be implemented.");
+	}
+
+
+	//returns this segment as a buffer
+	public byte[] toBytes() {
+		buffer.position(0);
+		byte[] array = new byte[buffer.remaining()];
+		buffer.get(array);
+		return array;
 	}
 
 
@@ -106,10 +154,12 @@ public class TCPSegmentToSend extends TCPSegment{
 	public void setData(ByteBuffer data) {
 		buffer.position(getHeadLen());
 		buffer.put(data);
+		buffer.limit(buffer.position());
 	}
 
 	public void setData(byte[] data) {
 		buffer.position(getHeadLen());
 		buffer.put(data);
+		buffer.limit(buffer.position());
 	}
 }

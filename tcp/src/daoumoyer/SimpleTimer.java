@@ -8,10 +8,10 @@ import java.util.Calendar;
  */
 public class SimpleTimer {
 	private long endTime;
-	private final long duration;
+	private int duration;
 	private boolean stopped;
 
-	public SimpleTimer(long duration) {
+	public SimpleTimer(int duration) {
 		this.duration = duration;
 		stopped = true;
 	}
@@ -27,5 +27,13 @@ public class SimpleTimer {
 
 	public void stop() {
 		stopped = true;
+	}
+
+	public boolean isStopped() {
+		return stopped;
+	}
+
+	public void changeDuration(int duration) {
+		this.duration = duration;
 	}
 }
