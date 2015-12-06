@@ -6,12 +6,12 @@ import daoumoyer.statemachine.State;
  * @author Grant Moyer
  * @since 2015-11-24
  */
-public enum ReceiverState implements State {
+public enum ClientState implements State {
 	WAIT("WAIT");
 
 	private String stateName;
 
-	ReceiverState(String stateName) {
+	ClientState(String stateName) {
 		this.stateName = stateName;
 	}
 

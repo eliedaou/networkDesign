@@ -11,7 +11,7 @@ import java.lang.Math;
  * @since 2015-11-24
  */
 public class SendData {
-	private SendWindow window;
+	private ServerWindow window;
 	private DatagramSocket socket;
 	private double dataLoss;
 	private long dropcount;
@@ -19,10 +19,10 @@ public class SendData {
 	public SendData(FileInputStream fIn, InetAddress remoteAddress, int remotePort, DatagramSocket socket, double dataLoss, double dataError) {
 		this.socket = socket;
 		this.dataLoss = dataLoss;
-		window = new SendWindow(fIn, remoteAddress, remotePort, dataError);
+		window = new ServerWindow(fIn, remoteAddress, remotePort, dataError);
 	}
 
-	public SendWindow getWindow() {
+	public ServerWindow getWindow() {
 		return window;
 	}
 

@@ -6,7 +6,7 @@ import daoumoyer.statemachine.*;
 
 import java.net.*;
 
-public class SendingStateMachine extends StateMachine {
+public class ServerStateMachine extends StateMachine {
 	private DatagramSocket socket;
 	private InetAddress remoteAddress;
 	private int remotePort;
@@ -22,7 +22,7 @@ public class SendingStateMachine extends StateMachine {
 
 	SenderState sState;
 
-	public SendingStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError,
+	public ServerStateMachine(DatagramSocket socket, InetAddress remoteAddress, int remotePort, double ackError,
 	                           double dataError, double dataLoss)
 	{
 		this.socket = socket;
@@ -46,7 +46,7 @@ public class SendingStateMachine extends StateMachine {
 					//create variables
 					SendSenderEvent sendEvent = (SendSenderEvent) event;
 					SendData data = sendEvent.getData();
-					SendWindow window = data.getWindow();
+					ServerWindow window = data.getWindow();
 
 					//event logic
 					if (window.getNextSeqNum() < window.getBase() + window.getWindowSize()) {
@@ -64,7 +64,7 @@ public class SendingStateMachine extends StateMachine {
 					//create variables
 					TimeoutSenderEvent timeoutEvent = (TimeoutSenderEvent) event;
 					SendData data = timeoutEvent.getData();
-					SendWindow window = data.getWindow();
+					ServerWindow window = data.getWindow();
 
 					//event logic
 					timeoutEvent.getTimer().restart();
@@ -76,7 +76,7 @@ public class SendingStateMachine extends StateMachine {
 				} else if (event instanceof RcvSenderEvent) {
 					//create variables
 					RcvSenderEvent rcvEvent = (RcvSenderEvent) event;
-					SendWindow window = rcvEvent.getWindow();
+					ServerWindow window = rcvEvent.getWindow();
 					ReceivedAck ack = rcvEvent.getAck();
 					SimpleTimer timer = rcvEvent.getTimer();
 					if (!rcvEvent.isCorrupt() && ack.getSeqNum() == -1) {

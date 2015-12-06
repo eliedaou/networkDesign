@@ -3,13 +3,13 @@ package daoumoyer.receiver;
 import java.net.DatagramPacket;
 import java.net.SocketAddress;
 
-public class ReceivedPacket {
+public class ClientReceivedPacket {
 	private final boolean corrupt;
 	private long seq;
 	private final byte[] data;
 	private SocketAddress source;
 
-	public ReceivedPacket(DatagramPacket packet) {
+	public ClientReceivedPacket(DatagramPacket packet) {
 		byte[] buffer = packet.getData();
 		int off = packet.getOffset();
 		int length = packet.getLength();

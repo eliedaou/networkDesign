@@ -12,8 +12,8 @@ import java.net.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class SendManager implements Runnable {
-	private final SendingStateMachine machine;
+public class ServerSendManager implements Runnable {
+	private final ServerStateMachine machine;
 	private final DatagramSocket socket;
 	private final FileInputStream fIn;
 	private final InetAddress remoteAddress;
@@ -25,7 +25,7 @@ public class SendManager implements Runnable {
 	private final SendData data;
 	private long dropcount;
 
-	public SendManager(FileInputStream fIn, double ackError, double dataError, double ackLoss, double dataLoss) {
+	public ServerSendManager(FileInputStream fIn, double ackError, double dataError, double ackLoss, double dataLoss) {
 		// temporary variable needed for try-catch
 		DatagramSocket tempSocket = null;
 		try {
@@ -70,7 +70,7 @@ public class SendManager implements Runnable {
 		this.dataLoss = dataLoss;
 
 		// start state machine
-		machine = new SendingStateMachine(socket, remoteAddress, remotePort,
+		machine = new ServerStateMachine(socket, remoteAddress, remotePort,
 				ackError, dataError, dataLoss);
 
 		// keep file input stream

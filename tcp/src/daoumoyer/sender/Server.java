@@ -76,19 +76,19 @@ public class Server {
 		//run SendManager
 		switch (bitLoss) {
 			case 1:
-				(new SendManager(fIn, 0 , 0, 0, 0)).run();
+				(new ServerSendManager(fIn, 0 , 0, 0, 0)).run();
 				break;
 			case 2:
-				(new SendManager(fIn, errorRatio, 0, 0 , 0)).run();
+				(new ServerSendManager(fIn, errorRatio, 0, 0 , 0)).run();
 				break;
 			case 3:
-				(new SendManager(fIn, 0, errorRatio, 0 , 0)).run();
+				(new ServerSendManager(fIn, 0, errorRatio, 0 , 0)).run();
 				break;
 			case 4:
-				(new SendManager(fIn, 0, 0, errorRatio, 0)).run();
+				(new ServerSendManager(fIn, 0, 0, errorRatio, 0)).run();
 				break;
 			case 5:
-				(new SendManager(fIn, 0, 0, 0, errorRatio)).run();
+				(new ServerSendManager(fIn, 0, 0, 0, errorRatio)).run();
 				break;
 		}
     }

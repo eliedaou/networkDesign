@@ -7,16 +7,16 @@ import daoumoyer.statemachine.*;
 import java.net.*;
 import java.io.IOException;
 
-public class ReceiverStateMachine extends StateMachine {
+public class ClientStateMachine extends StateMachine {
 	private long expectedSeqNum;
 	private AckToSend currentAck;
 	private DatagramSocket socket;
 
 	protected State delta(State currentState, Event event) throws DoneException, IOException {
-		return delta((ReceiverState) currentState, (RcvReceiverEvent) event);
+		return delta((ClientState) currentState, (RcvReceiverEvent) event);
 	}
 
-	protected ReceiverState delta(ReceiverState currentState, RcvReceiverEvent event) throws DoneException, IOException {
+	protected ClientState delta(ClientState currentState, RcvReceiverEvent event) throws DoneException, IOException {
 		switch (currentState) {
 			case WAIT:
 				//make variables
@@ -37,13 +37,13 @@ public class ReceiverStateMachine extends StateMachine {
 					sendAck(currentAck);
 					++expectedSeqNum;
 
-					return ReceiverState.WAIT;
+					return ClientState.WAIT;
 				} else {
 					if (currentAck != null) {
 						sendAck(currentAck);
 					}
 
-					return ReceiverState.WAIT;
+					return ClientState.WAIT;
 				}
 			default:
 				throw new InvalidStateException(currentState);
@@ -51,10 +51,10 @@ public class ReceiverStateMachine extends StateMachine {
 	}
 
 	protected State initialState() {
-		return ReceiverState.WAIT;
+		return ClientState.WAIT;
 	}
 
-	public ReceiverStateMachine(DatagramSocket socket) {
+	public ClientStateMachine(DatagramSocket socket) {
 		expectedSeqNum = 0;
 		this.socket = socket;
 		currentAck = null;

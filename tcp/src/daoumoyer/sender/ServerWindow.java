@@ -12,7 +12,7 @@ import java.lang.Math;
  * @author Grant Moyer
  * @since 2015-11-24
  */
-public class SendWindow {
+public class ServerWindow {
 	private long base;
 	private long nextSeqNum;
 	private long endOfFile;
@@ -25,7 +25,7 @@ public class SendWindow {
 	private double dataError;
 	private static long corruptcount;
 
-	public SendWindow(FileInputStream fIn, InetAddress remoteAddress, int remotePort, double dataError) {
+	public ServerWindow(FileInputStream fIn, InetAddress remoteAddress, int remotePort, double dataError) {
 		base = 0;
 		endOfFile = -1;
 		this.dataError = dataError;

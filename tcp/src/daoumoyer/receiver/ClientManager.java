@@ -11,12 +11,12 @@ import java.io.IOException;
 import daoumoyer.sender.DoneException;
 import daoumoyer.statemachine.CannotAdvanceException;
 
-public class ReceiveManager implements Runnable {
-	private final ReceiverStateMachine machine;
+public class ClientManager implements Runnable {
+	private final ClientStateMachine machine;
 	private final DatagramSocket socket;
 	private final FileOutputStream fOut;
 
-	public ReceiveManager(FileOutputStream fOut) {
+	public ClientManager(FileOutputStream fOut) {
 		//temporary variable needed for try-catch
 		DatagramSocket tempSocket = null;
 		try {
@@ -41,7 +41,7 @@ public class ReceiveManager implements Runnable {
 		}));
 
 		//start state machine
-		machine = new ReceiverStateMachine(socket);
+		machine = new ClientStateMachine(socket);
 
 		//keep file variable
 		this.fOut = fOut;
@@ -54,7 +54,7 @@ public class ReceiveManager implements Runnable {
 				byte[] buffer = new byte[1000];
 				DatagramPacket udpPacket = new DatagramPacket(buffer, buffer.length);
 				socket.receive(udpPacket);
-				ReceivedPacket rcvPacket = new ReceivedPacket(udpPacket);
+				ClientReceivedPacket rcvPacket = new ClientReceivedPacket(udpPacket);
 
 				//make event
 				RcvReceiverEvent rcvEvent = new RcvReceiverEvent(rcvPacket, fOut);

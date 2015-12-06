@@ -49,6 +49,6 @@ public class Client {
 		}));
 
 		//run ReceiveManager
-		(new ReceiveManager(stream)).run();
+		(new ClientManager(stream)).run();
 	}
 }
