@@ -4,7 +4,7 @@ import java.net.DatagramPacket;
 import java.nio.*;
 
 /**
- * Represents a TCP segment
+ * Constructs a TCPSegment from a UDP DatagramPacket. The contents of the TCPSegment can then be inspected and used.
  *
  * @author Grant Moyer
  * @since 2015-12-04

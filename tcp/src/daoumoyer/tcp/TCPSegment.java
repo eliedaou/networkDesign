@@ -3,11 +3,25 @@ package daoumoyer.tcp;
 import java.nio.ByteBuffer;
 
 /**
+ * Represents a generic TCP segment. Has methods to view the contents of the segment.
+ *
  * @author Grant Moyer
  * @since 2015-12-05
  */
 public abstract class TCPSegment {
+	//Flag constants
+	protected static final byte URG = 0b00100000;
+	protected static final byte ACK = 0b00010000;
+	protected static final byte PSH = 0b00001000;
+	protected static final byte RST = 0b00000100;
+	protected static final byte SYN = 0b00000010;
+	protected static final byte FIN = 0b00000001;
+
 	protected ByteBuffer buffer;
+
+
+	// ================ Getters ===============
+	// used to get specific fields in the TCP segment
 
 	public short getSrcPort() {
 		return buffer.getShort(0);
@@ -32,14 +46,6 @@ public abstract class TCPSegment {
 	public byte getFlags() {
 		return (byte) (buffer.get(13) & 0b00111111);
 	}
-
-	//Flag constants
-	protected static final byte URG = 0b00100000;
-	protected static final byte ACK = 0b00010000;
-	protected static final byte PSH = 0b00001000;
-	protected static final byte RST = 0b00000100;
-	protected static final byte SYN = 0b00000010;
-	protected static final byte FIN = 0b00000001;
 
 	public boolean isUrg() {
 		return (getFlags() & URG) != 0;

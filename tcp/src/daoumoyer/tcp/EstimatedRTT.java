@@ -1,6 +1,8 @@
 package daoumoyer.tcp;
 
 /**
+ * Keeps track of an RTT estimate based on the TCP standard. Has methods to get timeout intervals based on the estimate.
+ *
  * @author Grant Moyer
  * @since 2015-12-06
  */

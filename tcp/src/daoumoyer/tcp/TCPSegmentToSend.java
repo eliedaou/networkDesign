@@ -3,12 +3,15 @@ package daoumoyer.tcp;
 import java.nio.ByteBuffer;
 
 /**
+ * Allows the construction of a TCPSegment. The TCPSegment can then be sent over the network.
+ *
  * @author Grant Moyer
  * @since 2015-12-05
  */
 public class TCPSegmentToSend extends TCPSegment{
 	private static final int MSS = 1500 - 40 - 8; //(Ethernet MTU) - (IPv6 header) - (UDP header)
 
+	//make a segment that can hold 'size' bytes including the header
 	public TCPSegmentToSend(int size) {
 		if (size > MSS) throw new MSSExcededException(size, MSS);
 		buffer = ByteBuffer.allocateDirect(size);
@@ -18,6 +21,10 @@ public class TCPSegmentToSend extends TCPSegment{
 	public TCPSegmentToSend() {
 		this(MSS);
 	}
+
+
+	// ================ Setters ===============
+	// used to set specific fields in the TCP segment
 
 	public void setSrcPort(short srcPort) {
 		buffer.putShort(0, srcPort);
@@ -49,6 +56,7 @@ public class TCPSegmentToSend extends TCPSegment{
 		setFlags((byte) (flags & 0xff));
 	}
 
+	// convenience method to set a particular bit in the flags field
 	private void setFlag(byte flag, boolean value) {
 		byte flags = getFlags();
 		if (value) {
