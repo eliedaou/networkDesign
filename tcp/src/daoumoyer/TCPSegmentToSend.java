@@ -7,11 +7,6 @@ import java.nio.ByteBuffer;
  * @since 2015-12-05
  */
 public class TCPSegmentToSend extends TCPSegment{
-	private short srcPort;
-	private short destPort;
-	private int ackNum;
-	private int seqNum;
-	private byte headLen;
 	private static final int MSS = 1500 - 40 - 8; //(Ethernet MTU) - (IPv6 header) - (UDP header)
 
 	public TCPSegmentToSend(int size) {
@@ -27,23 +22,23 @@ public class TCPSegmentToSend extends TCPSegment{
 	//TODO implement all set*() methods
 
 	public void setSrcPort(short srcPort) {
-		this.srcPort = srcPort;
+		buffer.putShort(0, srcPort);
 	}
 
 	public void setDestPort(short destPort) {
-		this.destPort = destPort;
+		buffer.putShort(2, destPort);
 	}
 
 	public void setSeqNum(int seqNum) {
-		this.seqNum = seqNum;
+		buffer.putInt(4, seqNum);
 	}
 
 	public void setAckNum(int ackNum) {
-		this.ackNum = ackNum;
+		buffer.putInt(8, ackNum);
 	}
 
 	public void setHeadLen(byte headLen) {
-		this.headLen = headLen;
+		buffer.put(12, (byte) (headLen << 4));
 	}
 
 	//Flag constants
@@ -98,15 +93,19 @@ public class TCPSegmentToSend extends TCPSegment{
 		setFlag(FIN, fin);
 	}
 
-	public void setRcvWin(short RcvWin) {
+	public void setRcvWin(short rcvWin) {
+		buffer.putShort(14, rcvWin);
 	}
 
 	public void setChecksum(short checksum) {
+		buffer.putShort(16, checksum);
 	}
 
 	public void setUrgDataPointer(short urgDataPointer) {
+		buffer.putShort(18, urgDataPointer);
 	}
 
 	public void setData(ByteBuffer data) {
+		
 	}
 }
