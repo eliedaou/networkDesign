@@ -7,6 +7,11 @@ import java.nio.ByteBuffer;
  * @since 2015-12-05
  */
 public class TCPSegmentToSend extends TCPSegment{
+	private short srcPort;
+	private short destPort;
+	private int ackNum;
+	private int seqNum;
+	private byte headLen;
 	private static final int MSS = 1500 - 40 - 8; //(Ethernet MTU) - (IPv6 header) - (UDP header)
 
 	public TCPSegmentToSend(int size) {
@@ -22,18 +27,23 @@ public class TCPSegmentToSend extends TCPSegment{
 	//TODO implement all set*() methods
 
 	public void setSrcPort(short srcPort) {
+		this.srcPort = srcPort;
 	}
 
 	public void setDestPort(short destPort) {
+		this.destPort = destPort;
 	}
 
 	public void setSeqNum(int seqNum) {
+		this.seqNum = seqNum;
 	}
 
 	public void setAckNum(int ackNum) {
+		this.ackNum = ackNum;
 	}
 
 	public void setHeadLen(byte headLen) {
+		this.headLen = headLen;
 	}
 
 	//Flag constants
